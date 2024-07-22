@@ -108,13 +108,13 @@ const ServicesPage = () => {
             <p className="text-gray-800 mb-4">{selectedService.description}</p>
             <div className="flex justify-end space-x-4">
               <button
-                className="bg-green-500 text-white px-4 py-2 rounded"
+                className="bg-black text-white px-4 py-2 rounded"
                 onClick={handleBooking}
               >
                 Book
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className="bg-black text-white px-4 py-2 rounded"
                 onClick={() => setSelectedService(null)}
               >
                 Close
@@ -179,13 +179,13 @@ const ServicesPage = () => {
               <div className="flex justify-end space-x-4">
                 <button
                   type="submit"
-                  className="bg-green-500 text-white px-4 py-2 rounded"
+                  className="bg-black text-white px-4 py-2 rounded"
                 >
                   Submit Booking
                 </button>
                 <button
                   type="button"
-                  className="bg-red-500 text-white px-4 py-2 rounded"
+                  className="bg-black text-white px-4 py-2 rounded"
                   onClick={() => setShowBookingForm(false)}
                 >
                   Cancel
