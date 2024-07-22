@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.custom-dropdown .dropdown-toggle,
+.custom-dropdown .dropdown-menu,
+.custom-dropdown .dropdown-item {
+  width: 100%;
+}

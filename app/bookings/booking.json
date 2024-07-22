@@ -1,0 +1,38 @@
+[
+    {
+      "id": 1,
+      "serviceName": "Haircut",
+      "dateTime": "2024-03-15T14:30:00",
+      "cost": 30.00,
+      "status": "Pending",
+      "customer": {
+        "name": "John Doe",
+        "phone": "(123) 456-7890",
+        "email": "john.doe@example.com"
+      }
+    },
+    {
+      "id": 2,
+      "serviceName": "Manicure",
+      "dateTime": "2024-03-16T10:00:00",
+      "cost": 25.00,
+      "status": "Confirmed",
+      "customer": {
+        "name": "Jane Smith",
+        "phone": "(987) 654-3210",
+        "email": "jane.smith@example.com"
+      }
+    },
+    {
+      "id": 3,
+      "serviceName": "Massage",
+      "dateTime": "2024-03-17T16:00:00",
+      "cost": 60.00,
+      "status": "Cancelled",
+      "customer": {
+        "name": "Bob Johnson",
+        "phone": "(555) 123-4567",
+        "email": "bob.johnson@example.com"
+      }
+    }
+  ]
