@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import servicesData from '../components/services.json';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 
 interface Service {
-  id: number;
+  _id: string;
   name: string;
   category: string;
   price: number;
@@ -27,6 +27,8 @@ interface BookingFormData {
 const ServicesPage = () => {
   const searchParams = useSearchParams();
   const category = searchParams?.get('category') ?? null;
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -38,14 +40,20 @@ const ServicesPage = () => {
   });
 
   useEffect(() => {
-    if (category) {
-      const filteredServices = servicesData.filter(
-        (service: Service) => service.category === category
-      );
-      setServices(filteredServices);
-    } else {
-      setServices(servicesData);
-    }
+    const fetchServices = async () => {
+      const url = category
+        ? `/api/services?category=${encodeURIComponent(category)}`
+        : '/api/services';
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setServices(data);
+      } else {
+        console.error('Failed to fetch services');
+      }
+    };
+
+    fetchServices();
   }, [category]);
 
   const handleServiceClick = (service: Service) => {
@@ -53,7 +61,11 @@ const ServicesPage = () => {
   };
 
   const handleBooking = () => {
-    setShowBookingForm(true);
+    if (status === 'authenticated') {
+      setShowBookingForm(true);
+    } else {
+      router.push('/login?callbackUrl=/services');
+    }
   };
 
   const handleBookingFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,14 +76,34 @@ const ServicesPage = () => {
     }));
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement booking submission logic here
-    console.log('Booking submitted:', bookingFormData);
-    // Reset form and close modals
-    setBookingFormData({ name: '', email: '', date: '', time: '' });
-    setShowBookingForm(false);
-    setSelectedService(null);
+    if (!selectedService) return;
+
+    const booking = {
+      ...bookingFormData,
+      serviceId: selectedService._id,
+      serviceName: selectedService.name,
+      cost: selectedService.price,
+      status: 'Pending',
+      dateTime: new Date(`${bookingFormData.date}T${bookingFormData.time}`).toISOString(),
+    };
+
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(booking),
+    });
+
+    if (response.ok) {
+      console.log('Booking submitted:', booking);
+      setBookingFormData({ name: '', email: '', date: '', time: '' });
+      setShowBookingForm(false);
+      setSelectedService(null);
+      router.push('/bookings');
+    } else {
+      console.error('Failed to submit booking');
+    }
   };
 
   return (
@@ -84,7 +116,7 @@ const ServicesPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((service) => (
             <div
-              key={service.id}
+              key={service._id}
               className="bg-white p-4 rounded-lg shadow-md cursor-pointer"
               onClick={() => handleServiceClick(service)}
             >
