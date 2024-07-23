@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getIO } from '../../../../socketServer';
 
 export async function GET(
   request: Request,
@@ -59,6 +60,10 @@ export async function PATCH(
     if (!result.value) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
+
+    // Emit socket event
+    const io = getIO();
+    io.emit('bookingUpdated', result.value);
 
     return NextResponse.json(result.value);
   } catch (error) {

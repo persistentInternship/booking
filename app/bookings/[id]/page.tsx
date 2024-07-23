@@ -5,6 +5,7 @@ import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import NavBar from '@/app/components/NavBar';
 import Footer from '@/app/components/Footer';
+import io from 'socket.io-client';
 
 interface Booking {
   _id: string;
@@ -23,6 +24,15 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   const router = useRouter();
 
   useEffect(() => {
+    const socket = io();
+
+    socket.on('bookingUpdated', (updatedBooking: Booking) => {
+      if (updatedBooking._id === params.id) {
+        console.log('Received real-time update for booking:', updatedBooking);
+        setBooking(updatedBooking);
+      }
+    });
+
     const fetchBooking = async () => {
       try {
         const response = await fetch(`/api/bookings/${params.id}`);
@@ -41,6 +51,10 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     };
 
     fetchBooking();
+
+    return () => {
+      socket.disconnect();
+    };
   }, [params.id]);
 
   const handleCancel = async () => {
@@ -61,7 +75,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
 
       const updatedBooking = await response.json();
       console.log('Booking cancelled successfully:', updatedBooking);
-      setBooking({ ...booking, status: 'Cancelled' });
+      setBooking(updatedBooking);
     } catch (error) {
       console.error('Error cancelling booking:', error);
       setError('Failed to cancel booking. Please try again.');

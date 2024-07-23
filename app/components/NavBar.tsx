@@ -1,14 +1,17 @@
-"use client";
+'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
 import { Navbar, Button, Input, Dropdown, Drawer, Menu, Modal } from 'react-daisyui';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from "next-auth/react";
+import { useRouter } from 'next/navigation';
 
 function NavBar() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const loginRef = useRef<HTMLDialogElement>(null);
   const signupRef = useRef<HTMLDialogElement>(null);
 
@@ -82,6 +85,15 @@ function NavBar() {
     }
   };
 
+  const handleBookingsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (status === 'authenticated') {
+      router.push('/bookings');
+    } else {
+      setShowLoginPopup(true);
+    }
+  };
+
   return (
     <>
       <Navbar className='bg-gray-950 text-white'>
@@ -119,7 +131,7 @@ function NavBar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </Button>
-          <Link href="/bookings">
+          <Link href="/bookings" onClick={handleBookingsClick}>
             <Button color="ghost" shape="circle">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5M17 13l1.4 5M9 21h6M9 21a2 2 11-4 0M15 21a2 2 104 0" />
@@ -136,7 +148,6 @@ function NavBar() {
               <Dropdown.Menu className="menu-sm w-52 mt-3 z-[1] text-black right-0">
                 {status === 'authenticated' ? (
                   <>
-                    
                     <Dropdown.Item>
                       <Button onClick={() => signOut()}>Logout</Button>
                     </Dropdown.Item>
@@ -255,6 +266,31 @@ function NavBar() {
           </Modal.Actions>
         </form>
       </Modal>
+      {showLoginPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Login Required</h2>
+            <p className="mb-4 text-gray-600">Please log in to view your bookings.</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowLoginPopup(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLoginPopup(false);
+                  handleShowLoginModal();
+                }}
+                className="px-4 py-2 bg-black text-white rounded hover:bg-black"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
