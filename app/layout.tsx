@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import "./globals.css";
 import { Providers } from "../app/components/Providers";
 import ClientSessionProvider from "./ClientSessionProvider";
-import LoadingPage from './loading';
+import LoadingPage from './components/Loading';
 
 const inter = Inter({ subsets: ["latin"] });
 

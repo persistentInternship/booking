@@ -172,16 +172,7 @@ function NavBar() {
           <Menu.Item className="mb-4">
             <Input placeholder="Search Services" className="w-full" />
           </Menu.Item>
-          <Menu.Item className="mb-4">
-            <Dropdown className="custom-dropdown w-full">
-              <Dropdown.Toggle className="w-full">Select Place</Dropdown.Toggle>
-              <Dropdown.Menu className="w-full">
-                <Dropdown.Item className="w-full">Place 1</Dropdown.Item>
-                <Dropdown.Item className="w-full">Place 2</Dropdown.Item>
-                <Dropdown.Item className="w-full">Place 3</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Menu.Item>
+
           <Menu.Item>
             <Button className="w-full bg-black text-white">Search</Button>
           </Menu.Item>

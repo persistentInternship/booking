@@ -3,7 +3,6 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { getIO } from '../../../../socketServer';
 
 export async function GET(
   request: Request,
@@ -45,15 +44,23 @@ export async function PATCH(
   try {
     const client = await clientPromise;
     const db = client.db();
-    const { status } = await request.json();
+    const { status, name, email, dateTime } = await request.json();
 
-    if (status !== 'Cancelled') {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    const updateData: { [key: string]: any } = {};
+    if (status === 'Cancelled') {
+      updateData.status = 'Cancelled';
+    }
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (dateTime) updateData.dateTime = new Date(dateTime);
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No valid update data provided' }, { status: 400 });
     }
 
     const result = await db.collection('bookings').findOneAndUpdate(
       { _id: new ObjectId(params.id), userId: session.user.email },
-      { $set: { status: 'Cancelled' } },
+      { $set: updateData },
       { returnDocument: 'after' }
     );
 
@@ -61,13 +68,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    // Emit socket event
-    const io = getIO();
-    io.emit('bookingUpdated', result.value);
-
     return NextResponse.json(result.value);
   } catch (error) {
-    console.error('Error cancelling booking:', error);
-    return NextResponse.json({ error: 'Error cancelling booking' }, { status: 500 });
+    console.error('Error updating booking:', error);
+    return NextResponse.json({ error: 'Error updating booking' }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
+import Loading from '../components/Loading';
 
 interface Booking {
   _id: string;
@@ -19,6 +20,8 @@ export default function BookingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -29,17 +32,45 @@ export default function BookingsPage() {
   }, [status, router]);
 
   const fetchBookings = async () => {
-    const response = await fetch('/api/bookings');
-    if (response.ok) {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/bookings');
+      if (!response.ok) {
+        throw new Error('Failed to fetch bookings');
+      }
       const data = await response.json();
       setBookings(data);
-    } else {
-      console.error('Failed to fetch bookings');
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      setError('Failed to fetch bookings. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (status === 'loading') {
-    return <div>Loading...</div>;
+  if (status === 'loading' || isLoading) {
+    return (
+      <>
+        <NavBar />
+       <Loading/>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <NavBar />
+        <div className="container mx-auto mt-8 px-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline"> {error}</span>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
   }
 
   return (

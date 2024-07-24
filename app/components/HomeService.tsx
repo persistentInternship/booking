@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import ServiceImages from './ServiceImages';
 
 const categories = [
   { name: "Women's Salon & Spa", icon: "/photo/1.webp" },
@@ -42,11 +43,8 @@ const HomeServices = () => {
             </div>
           </div>
         </div>
-        <div className="md:w-1/2 p-4 grid grid-cols-2 gap-4">
-          <img src="/photo/11.webp" alt="Service 1" className="rounded-lg" />
-          <img src="/photo/22.webp" alt="Service 2" className="rounded-lg" />
-          <img src="/photo/33.webp" alt="Service 3" className="rounded-lg" />
-          <img src="/photo/44.webp" alt="Service 4" className="rounded-lg" />
+        <div className="md:w-1/2 md:pt-20">
+          <ServiceImages />
         </div>
       </div>
     </div>

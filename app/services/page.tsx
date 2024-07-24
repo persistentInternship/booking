@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
+import Loading from '../components/Loading';
 
 interface Service {
   _id: string;
@@ -32,6 +33,7 @@ const ServicesPage = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [bookingFormData, setBookingFormData] = useState<BookingFormData>({
     name: '',
     email: '',
@@ -41,6 +43,7 @@ const ServicesPage = () => {
 
   useEffect(() => {
     const fetchServices = async () => {
+      setLoading(true);
       const url = category
         ? `/api/services?category=${encodeURIComponent(category)}`
         : '/api/services';
@@ -51,6 +54,7 @@ const ServicesPage = () => {
       } else {
         console.error('Failed to fetch services');
       }
+      setLoading(false);
     };
 
     fetchServices();
@@ -106,6 +110,15 @@ const ServicesPage = () => {
     }
   };
 
+  const resetBookingForm = () => {
+    setBookingFormData({
+      name: '',
+      email: '',
+      date: '',
+      time: '',
+    });
+  };
+
   return (
     <>
       <NavBar />
@@ -113,20 +126,24 @@ const ServicesPage = () => {
         <h1 className="text-3xl font-bold mb-4">
           {category ? `Services: ${category}` : 'All Services'}
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map((service) => (
-            <div
-              key={service._id}
-              className="bg-white p-4 rounded-lg shadow-md cursor-pointer"
-              onClick={() => handleServiceClick(service)}
-            >
-              <img src={service.photo} alt={service.name} className="w-full h-48 object-cover mb-2 rounded" />
-              <h2 className="text-xl font-semibold mb-2">{service.name}</h2>
-              <p className="text-gray-600">Price: ${service.price}</p>
-              <p className="text-gray-600">Rating: {service.rating.toFixed(1)}</p>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+           <Loading/>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {services.map((service) => (
+              <div
+                key={service._id}
+                className="bg-white p-4 rounded-lg shadow-md cursor-pointer"
+                onClick={() => handleServiceClick(service)}
+              >
+                <img src={service.photo} alt={service.name} className="w-full h-48 object-cover mb-2 rounded" />
+                <h2 className="text-xl font-semibold mb-2">{service.name}</h2>
+                <p className="text-gray-600">Price: ${service.price}</p>
+                <p className="text-gray-600">Rating: {service.rating.toFixed(1)}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       {selectedService && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -214,6 +231,13 @@ const ServicesPage = () => {
                   className="bg-black text-white px-4 py-2 rounded"
                 >
                   Submit Booking
+                </button>
+                <button
+                  type="button"
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  onClick={resetBookingForm}
+                >
+                  Reset
                 </button>
                 <button
                   type="button"
