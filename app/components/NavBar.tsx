@@ -23,6 +23,8 @@ function NavBar() {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const toggleVisible = useCallback(() => {
     setVisible(visible => !visible);
   }, []);
@@ -91,6 +93,14 @@ function NavBar() {
       router.push('/bookings');
     } else {
       setShowLoginPopup(true);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/services?search=${encodeURIComponent(searchQuery.trim())}`);
+      setVisible(false);
     }
   };
 
@@ -169,13 +179,19 @@ function NavBar() {
       </Navbar>
       <Drawer open={visible} onClickOverlay={toggleVisible} className="drawer-left" side={
         <Menu className="p-4 w-80 h-full bg-base-200 text-base-content">
-          <Menu.Item className="mb-4">
-            <Input placeholder="Search Services" className="w-full" />
-          </Menu.Item>
-
-          <Menu.Item>
-            <Button className="w-full bg-black text-white">Search</Button>
-          </Menu.Item>
+          <form onSubmit={handleSearch}>
+            <Menu.Item className="mb-4">
+              <Input 
+                placeholder="Search Services" 
+                className="w-full" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Menu.Item>
+            <Menu.Item>
+              <Button type="submit" className="w-full bg-black text-white">Search</Button>
+            </Menu.Item>
+          </form>
         </Menu>
       }>
       </Drawer>

@@ -17,17 +17,31 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
-
+  const search = searchParams.get('search');
   try {
     const client = await clientPromise;
     const db = client.db();
-    let query = {};
+    const servicesCollection = db.collection('services');
+
+    let query: any = {};
+
     if (category) {
-      query = { category };
+      query.category = category;
     }
-    const services = await db.collection('services').find(query).toArray();
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const services = await servicesCollection.find(query).toArray();
+
     return NextResponse.json(services);
   } catch (error) {
-    return NextResponse.json({ error: 'Error fetching services' }, { status: 500 });
+    console.error('Error fetching services:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

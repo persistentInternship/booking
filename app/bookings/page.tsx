@@ -16,12 +16,15 @@ interface Booking {
   status: string;
 }
 
+type SortOption = 'dateAsc' | 'dateDesc' | 'costAsc' | 'costDesc';
+
 export default function BookingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>('dateDesc');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -48,11 +51,30 @@ export default function BookingsPage() {
     }
   };
 
+  const sortBookings = (option: SortOption) => {
+    setSortOption(option);
+    const sortedBookings = [...bookings].sort((a, b) => {
+      switch (option) {
+        case 'dateAsc':
+          return new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
+        case 'dateDesc':
+          return new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime();
+        case 'costAsc':
+          return a.cost - b.cost;
+        case 'costDesc':
+          return b.cost - a.cost;
+        default:
+          return 0;
+      }
+    });
+    setBookings(sortedBookings);
+  };
+
   if (status === 'loading' || isLoading) {
     return (
       <>
         <NavBar />
-       <Loading/>
+        <Loading />
         <Footer />
       </>
     );
@@ -77,7 +99,19 @@ export default function BookingsPage() {
     <>
       <NavBar />
       <div className="container mx-auto mt-8 px-4">
-        <h1 className="text-3xl font-bold mb-6">My Bookings</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">My Bookings</h1>
+          <select
+            className="border rounded px-2 py-1"
+            value={sortOption}
+            onChange={(e) => sortBookings(e.target.value as SortOption)}
+          >
+            <option value="dateDesc">Date (Newest First)</option>
+            <option value="dateAsc">Date (Oldest First)</option>
+            <option value="costDesc">Cost (Highest First)</option>
+            <option value="costAsc">Cost (Lowest First)</option>
+          </select>
+        </div>
         {bookings.length === 0 ? (
           <p>You have no bookings.</p>
         ) : (
