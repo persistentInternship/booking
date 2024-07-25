@@ -12,6 +12,7 @@ function NavBar() {
   const [visible, setVisible] = useState(false);
   const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const loginRef = useRef<HTMLDialogElement>(null);
   const signupRef = useRef<HTMLDialogElement>(null);
 
@@ -31,6 +32,10 @@ function NavBar() {
 
   const toggleProfileDropdown = useCallback(() => {
     setProfileDropdownVisible(profileDropdownVisible => !profileDropdownVisible);
+  }, []);
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen(prev => !prev);
   }, []);
 
   const handleShowLoginModal = useCallback(() => {
@@ -101,12 +106,14 @@ function NavBar() {
     if (searchQuery.trim()) {
       router.push(`/services?search=${encodeURIComponent(searchQuery.trim())}`);
       setVisible(false);
+      setMobileMenuOpen(false);
     }
   };
 
   return (
     <>
-      <Navbar className='bg-gray-950 text-white'>
+      {/* Large Screen Navbar */}
+      <Navbar className='bg-gray-950 text-white hidden lg:flex'>
         <Navbar.Start>
           <Dropdown>
             <Button tag="label" color="ghost" shape="circle" tabIndex={0}>
@@ -129,10 +136,10 @@ function NavBar() {
         </Navbar.Start>
         <Navbar.Center>
           <Link href="/">
-          <Button tag="a" color="ghost" className="normal-case text-xl">
-            <img src="/photo/door.svg" alt="Door" className="inline-block h-5 w-5 mr-2 bg-white" />
-            DoorDash
-          </Button>
+            <Button tag="a" color="ghost" className="normal-case text-xl">
+              <img src="/photo/door.svg" alt="Door" className="inline-block h-5 w-5 mr-2 bg-white" />
+              DoorDash
+            </Button>
           </Link>
         </Navbar.Center>
         <Navbar.End className="navbar-end">
@@ -177,6 +184,78 @@ function NavBar() {
           </Dropdown>
         </Navbar.End>
       </Navbar>
+
+      {/* Small Screen Navbar */}
+      <Navbar className='bg-gray-950 text-white lg:hidden'>
+        <Navbar.Start>
+          <Button color="ghost" onClick={toggleMobileMenu}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+          </Button>
+        </Navbar.Start>
+        <Navbar.Center className="flex-1 justify-center">
+          <Link href="/" className="flex items-center">
+            <img src="/photo/door.svg" alt="Door" className="h-8 w-8 mr-2" />
+            <span className="text-xl font-bold">DoorDash</span>
+          </Link>
+        </Navbar.Center>
+        <Navbar.End className="flex-none">
+          <Link href="/bookings" onClick={handleBookingsClick}>
+            <Button color="ghost" shape="circle" className="mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5M17 13l1.4 5M9 21h6M9 21a2 2 11-4 0M15 21a2 2 104 0" />
+              </svg>
+            </Button>
+          </Link>
+          <Dropdown>
+            <Button color="ghost" shape="circle" onClick={toggleProfileDropdown}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </Button>
+            {profileDropdownVisible && (
+              <Dropdown.Menu className="menu-sm w-52 mt-3 z-[1] text-black right-0">
+                {status === 'authenticated' ? (
+                  <>
+                    <Dropdown.Item>
+                      <Button onClick={() => signOut()}>Logout</Button>
+                    </Dropdown.Item>
+                  </>
+                ) : (
+                  <>
+                    <Dropdown.Item>
+                      <Button onClick={handleShowLoginModal}>Login</Button>
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      <Button onClick={handleShowSignupModal}>Signup</Button>
+                    </Dropdown.Item>
+                  </>
+                )}
+              </Dropdown.Menu>
+            )}
+          </Dropdown>
+        </Navbar.End>
+      </Navbar>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-gray-950 text-white p-4">
+          <Link href="/" className="block py-2">Home</Link>
+          <Link href="/contact_us" className="block py-2">Contact Us</Link>
+          <Link href="/about" className="block py-2">About</Link>
+          <form onSubmit={handleSearch} className="mt-4">
+            <Input 
+              placeholder="Search Services" 
+              className="w-full mb-2" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button type="submit" className="w-full bg-black text-white">Search</Button>
+          </form>
+        </div>
+      )}
+
       <Drawer open={visible} onClickOverlay={toggleVisible} className="drawer-left" side={
         <Menu className="p-4 w-80 h-full bg-base-200 text-base-content">
           <form onSubmit={handleSearch}>
@@ -234,10 +313,10 @@ function NavBar() {
           <Modal.Header className="font-bold text-center">Sign up</Modal.Header>
           <Modal.Body>
             <div className="flex flex-col space-y-4">
-              <Input 
+            <Input 
                 type="email" 
                 placeholder="Enter email" 
-                className="w-full bg-gray-700 text-white rounded-md p-2" 
+                className="w-full bg-gray-700 text-white rounded-md p-2"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
                 required
