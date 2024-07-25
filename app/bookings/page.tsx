@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { io, Socket } from 'socket.io-client';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import Loading from '../components/Loading';
@@ -25,12 +26,43 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('dateDesc');
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login?callbackUrl=/bookings');
     } else if (status === 'authenticated') {
       fetchBookings();
+      const newSocket = io();
+      setSocket(newSocket);
+
+      newSocket.on('connect', () => {
+        console.log('Connected to server');
+      });
+
+      newSocket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
+
+      newSocket.on('bookingUpdate', (updatedBooking: Booking | null) => {
+        console.log('Received booking update:', updatedBooking);
+        if (updatedBooking && updatedBooking._id) {
+          setBookings(prevBookings => {
+            const updatedBookings = prevBookings.map(booking => 
+              booking._id === updatedBooking._id ? updatedBooking : booking
+            );
+            console.log('Updated bookings:', updatedBookings);
+            return updatedBookings;
+          });
+        } else {
+          console.error('Received invalid booking update:', updatedBooking);
+        }
+      });
+
+      return () => {
+        console.log('Disconnecting socket');
+        newSocket.disconnect();
+      };
     }
   }, [status, router]);
 
@@ -41,7 +73,7 @@ export default function BookingsPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch bookings');
       }
-      const data = await response.json();
+      const data: Booking[] = await response.json();
       setBookings(data);
     } catch (error) {
       console.error('Error fetching bookings:', error);

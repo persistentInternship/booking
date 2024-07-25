@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import io from 'socket.io-client';
 import NavBar from '@/app/components/NavBar';
 import Footer from '@/app/components/Footer';
 import Loading from '@/app/components/Loading';
@@ -44,6 +45,25 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     };
 
     fetchBooking();
+
+    // Set up Socket.IO connection
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    socket.on('bookingUpdate', (updatedBooking: Booking) => {
+      console.log('Received booking update:', updatedBooking);
+      if (updatedBooking._id === params.id) {
+        setBooking(updatedBooking);
+      }
+    });
+
+    return () => {
+      console.log('Disconnecting socket');
+      socket.disconnect();
+    };
   }, [params.id]);
 
   const handleCancel = async () => {
