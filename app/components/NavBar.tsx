@@ -1,14 +1,18 @@
-"use client";
+'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
 import { Navbar, Button, Input, Dropdown, Drawer, Menu, Modal } from 'react-daisyui';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from "next-auth/react";
+import { useRouter } from 'next/navigation';
 
 function NavBar() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const loginRef = useRef<HTMLDialogElement>(null);
   const signupRef = useRef<HTMLDialogElement>(null);
 
@@ -20,12 +24,18 @@ function NavBar() {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const toggleVisible = useCallback(() => {
     setVisible(visible => !visible);
   }, []);
 
   const toggleProfileDropdown = useCallback(() => {
     setProfileDropdownVisible(profileDropdownVisible => !profileDropdownVisible);
+  }, []);
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen(prev => !prev);
   }, []);
 
   const handleShowLoginModal = useCallback(() => {
@@ -82,9 +92,28 @@ function NavBar() {
     }
   };
 
+  const handleBookingsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (status === 'authenticated') {
+      router.push('/bookings');
+    } else {
+      setShowLoginPopup(true);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/services?search=${encodeURIComponent(searchQuery.trim())}`);
+      setVisible(false);
+      setMobileMenuOpen(false);
+    }
+  };
+
   return (
     <>
-      <Navbar className='bg-gray-950 text-white'>
+      {/* Large Screen Navbar */}
+      <Navbar className='bg-gray-950 text-white hidden lg:flex'>
         <Navbar.Start>
           <Dropdown>
             <Button tag="label" color="ghost" shape="circle" tabIndex={0}>
@@ -107,10 +136,10 @@ function NavBar() {
         </Navbar.Start>
         <Navbar.Center>
           <Link href="/">
-          <Button tag="a" color="ghost" className="normal-case text-xl">
-            <img src="/photo/door.svg" alt="Door" className="inline-block h-5 w-5 mr-2 bg-white" />
-            DoorDash
-          </Button>
+            <Button tag="a" color="ghost" className="normal-case text-xl">
+              <img src="/photo/door.svg" alt="Door" className="inline-block h-5 w-5 mr-2 bg-white" />
+              DoorDash
+            </Button>
           </Link>
         </Navbar.Center>
         <Navbar.End className="navbar-end">
@@ -119,7 +148,7 @@ function NavBar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </Button>
-          <Link href="/bookings">
+          <Link href="/bookings" onClick={handleBookingsClick}>
             <Button color="ghost" shape="circle">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5M17 13l1.4 5M9 21h6M9 21a2 2 11-4 0M15 21a2 2 104 0" />
@@ -136,7 +165,6 @@ function NavBar() {
               <Dropdown.Menu className="menu-sm w-52 mt-3 z-[1] text-black right-0">
                 {status === 'authenticated' ? (
                   <>
-                    
                     <Dropdown.Item>
                       <Button onClick={() => signOut()}>Logout</Button>
                     </Dropdown.Item>
@@ -156,24 +184,93 @@ function NavBar() {
           </Dropdown>
         </Navbar.End>
       </Navbar>
+
+      {/* Small Screen Navbar */}
+      <Navbar className='bg-gray-950 text-white lg:hidden'>
+        <Navbar.Start>
+          <Button color="ghost" onClick={toggleMobileMenu}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+          </Button>
+        </Navbar.Start>
+        <Navbar.Center className="flex-1 justify-center">
+          <Link href="/" className="flex items-center">
+            <img src="/photo/door.svg" alt="Door" className="h-8 w-8 mr-2" />
+            <span className="text-xl font-bold">DoorDash</span>
+          </Link>
+        </Navbar.Center>
+        <Navbar.End className="flex-none">
+          <Link href="/bookings" onClick={handleBookingsClick}>
+            <Button color="ghost" shape="circle" className="mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5M17 13l1.4 5M9 21h6M9 21a2 2 11-4 0M15 21a2 2 104 0" />
+              </svg>
+            </Button>
+          </Link>
+          <Dropdown>
+            <Button color="ghost" shape="circle" onClick={toggleProfileDropdown}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </Button>
+            {profileDropdownVisible && (
+              <Dropdown.Menu className="menu-sm w-52 mt-3 z-[1] text-black right-0">
+                {status === 'authenticated' ? (
+                  <>
+                    <Dropdown.Item>
+                      <Button onClick={() => signOut()}>Logout</Button>
+                    </Dropdown.Item>
+                  </>
+                ) : (
+                  <>
+                    <Dropdown.Item>
+                      <Button onClick={handleShowLoginModal}>Login</Button>
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      <Button onClick={handleShowSignupModal}>Signup</Button>
+                    </Dropdown.Item>
+                  </>
+                )}
+              </Dropdown.Menu>
+            )}
+          </Dropdown>
+        </Navbar.End>
+      </Navbar>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-gray-950 text-white p-4">
+          <Link href="/" className="block py-2">Home</Link>
+          <Link href="/contact_us" className="block py-2">Contact Us</Link>
+          <Link href="/about" className="block py-2">About</Link>
+          <form onSubmit={handleSearch} className="mt-4">
+            <Input 
+              placeholder="Search Services" 
+              className="w-full mb-2" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button type="submit" className="w-full bg-black text-white">Search</Button>
+          </form>
+        </div>
+      )}
+
       <Drawer open={visible} onClickOverlay={toggleVisible} className="drawer-left" side={
         <Menu className="p-4 w-80 h-full bg-base-200 text-base-content">
-          <Menu.Item className="mb-4">
-            <Input placeholder="Search Services" className="w-full" />
-          </Menu.Item>
-          <Menu.Item className="mb-4">
-            <Dropdown className="custom-dropdown w-full">
-              <Dropdown.Toggle className="w-full">Select Place</Dropdown.Toggle>
-              <Dropdown.Menu className="w-full">
-                <Dropdown.Item className="w-full">Place 1</Dropdown.Item>
-                <Dropdown.Item className="w-full">Place 2</Dropdown.Item>
-                <Dropdown.Item className="w-full">Place 3</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Menu.Item>
-          <Menu.Item>
-            <Button className="w-full bg-black text-white">Search</Button>
-          </Menu.Item>
+          <form onSubmit={handleSearch}>
+            <Menu.Item className="mb-4">
+              <Input 
+                placeholder="Search Services" 
+                className="w-full" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Menu.Item>
+            <Menu.Item>
+              <Button type="submit" className="w-full bg-black text-white">Search</Button>
+            </Menu.Item>
+          </form>
         </Menu>
       }>
       </Drawer>
@@ -216,10 +313,10 @@ function NavBar() {
           <Modal.Header className="font-bold text-center">Sign up</Modal.Header>
           <Modal.Body>
             <div className="flex flex-col space-y-4">
-              <Input 
+            <Input 
                 type="email" 
                 placeholder="Enter email" 
-                className="w-full bg-gray-700 text-white rounded-md p-2" 
+                className="w-full bg-gray-700 text-white rounded-md p-2"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
                 required
@@ -255,6 +352,31 @@ function NavBar() {
           </Modal.Actions>
         </form>
       </Modal>
+      {showLoginPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Login Required</h2>
+            <p className="mb-4 text-gray-600">Please log in to view your bookings.</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowLoginPopup(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLoginPopup(false);
+                  handleShowLoginModal();
+                }}
+                className="px-4 py-2 bg-black text-white rounded hover:bg-black"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

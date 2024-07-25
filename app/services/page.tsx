@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import servicesData from '../components/services.json';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession, signIn } from 'next-auth/react';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
+import Loading from '../components/Loading';
 
 interface Service {
-  id: number;
+  _id: string;
   name: string;
   category: string;
   price: number;
@@ -27,33 +28,99 @@ interface BookingFormData {
 const ServicesPage = () => {
   const searchParams = useSearchParams();
   const category = searchParams?.get('category') ?? null;
+  const searchQuery = searchParams?.get('search') ?? null;
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [bookingFormData, setBookingFormData] = useState<BookingFormData>({
     name: '',
     email: '',
     date: '',
     time: '',
   });
+  const [noResults, setNoResults] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   useEffect(() => {
-    if (category) {
-      const filteredServices = servicesData.filter(
-        (service: Service) => service.category === category
-      );
-      setServices(filteredServices);
-    } else {
-      setServices(servicesData);
-    }
-  }, [category]);
+    const fetchServices = async () => {
+      setLoading(true);
+      setNoResults(false);
+      let url = '/api/services';
+      const params = new URLSearchParams();
+
+      if (category) {
+        params.append('category', category);
+      }
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          setServices(data);
+          setNoResults(data.length === 0);
+        } else {
+          console.error('Failed to fetch services');
+          setServices([]);
+          setNoResults(true);
+        }
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        setServices([]);
+        setNoResults(true);
+      }
+      setLoading(false);
+    };
+
+    fetchServices();
+  }, [category, searchQuery]);
 
   const handleServiceClick = (service: Service) => {
     setSelectedService(service);
   };
 
   const handleBooking = () => {
-    setShowBookingForm(true);
+    if (status === 'authenticated') {
+      setShowBookingForm(true);
+    } else {
+      setShowLoginForm(true);
+    }
+  };
+
+  const handleLoginRequired = useCallback(() => {
+    setShowLoginForm(true);
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (result?.error) {
+        alert(result.error);
+      } else {
+        alert('Login successful!');
+        setShowLoginForm(false);
+        window.location.reload(); // Refresh to update session state
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('An error occurred during login');
+    }
   };
 
   const handleBookingFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,14 +131,43 @@ const ServicesPage = () => {
     }));
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement booking submission logic here
-    console.log('Booking submitted:', bookingFormData);
-    // Reset form and close modals
-    setBookingFormData({ name: '', email: '', date: '', time: '' });
-    setShowBookingForm(false);
-    setSelectedService(null);
+    if (!selectedService) return;
+
+    const booking = {
+      ...bookingFormData,
+      serviceId: selectedService._id,
+      serviceName: selectedService.name,
+      cost: selectedService.price,
+      status: 'Pending',
+      dateTime: new Date(`${bookingFormData.date}T${bookingFormData.time}`).toISOString(),
+    };
+
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(booking),
+    });
+
+    if (response.ok) {
+      console.log('Booking submitted:', booking);
+      setBookingFormData({ name: '', email: '', date: '', time: '' });
+      setShowBookingForm(false);
+      setSelectedService(null);
+      router.push('/bookings');
+    } else {
+      console.error('Failed to submit booking');
+    }
+  };
+
+  const resetBookingForm = () => {
+    setBookingFormData({
+      name: '',
+      email: '',
+      date: '',
+      time: '',
+    });
   };
 
   return (
@@ -79,22 +175,32 @@ const ServicesPage = () => {
       <NavBar />
       <div className="container mx-auto p-4">
         <h1 className="text-3xl font-bold mb-4">
-          {category ? `Services: ${category}` : 'All Services'}
+          {searchQuery
+            ? `Search Results for: ${searchQuery}`
+            : category
+            ? `Services: ${category}`
+            : 'All Services'}
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map((service) => (
-            <div
-              key={service.id}
-              className="bg-white p-4 rounded-lg shadow-md cursor-pointer"
-              onClick={() => handleServiceClick(service)}
-            >
-              <img src={service.photo} alt={service.name} className="w-full h-48 object-cover mb-2 rounded" />
-              <h2 className="text-xl font-semibold mb-2">{service.name}</h2>
-              <p className="text-gray-600">Price: ${service.price}</p>
-              <p className="text-gray-600">Rating: {service.rating.toFixed(1)}</p>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <Loading />
+        ) : noResults ? (
+          <p className="text-center text-gray-600">No services found.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {services.map((service) => (
+              <div
+                key={service._id}
+                className="bg-white p-4 rounded-lg shadow-md cursor-pointer"
+                onClick={() => handleServiceClick(service)}
+              >
+                <img src={service.photo} alt={service.name} className="w-full h-48 object-cover mb-2 rounded" />
+                <h2 className="text-xl font-semibold mb-2">{service.name}</h2>
+                <p className="text-gray-600">Price: ${service.price}</p>
+                <p className="text-gray-600">Rating: {service.rating.toFixed(1)}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       {selectedService && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -108,13 +214,13 @@ const ServicesPage = () => {
             <p className="text-gray-800 mb-4">{selectedService.description}</p>
             <div className="flex justify-end space-x-4">
               <button
-                className="bg-green-500 text-white px-4 py-2 rounded"
+                className="bg-black text-white px-4 py-2 rounded"
                 onClick={handleBooking}
               >
                 Book
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className="bg-black text-white px-4 py-2 rounded"
                 onClick={() => setSelectedService(null)}
               >
                 Close
@@ -179,16 +285,69 @@ const ServicesPage = () => {
               <div className="flex justify-end space-x-4">
                 <button
                   type="submit"
-                  className="bg-green-500 text-white px-4 py-2 rounded"
+                  className="bg-black text-white px-4 py-2 rounded"
                 >
                   Submit Booking
                 </button>
                 <button
                   type="button"
-                  className="bg-red-500 text-white px-4 py-2 rounded"
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  onClick={resetBookingForm}
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  className="bg-black text-white px-4 py-2 rounded"
                   onClick={() => setShowBookingForm(false)}
                 >
                   Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {showLoginForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4">Login</h2>
+            <form onSubmit={handleLogin}>
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-gray-700 font-bold mb-2">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="password" className="block text-gray-700 font-bold mb-2">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  className="bg-gray-300 text-black px-4 py-2 rounded"
+                  onClick={() => setShowLoginForm(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-black text-white px-4 py-2 rounded"
+                >
+                  Login
                 </button>
               </div>
             </form>
