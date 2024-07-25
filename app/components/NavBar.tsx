@@ -113,7 +113,7 @@ function NavBar() {
   return (
     <>
       {/* Large Screen Navbar */}
-      <Navbar className='bg-gray-950 text-white hidden lg:flex'>
+      <Navbar className='bg-gray-950 text-white hidden lg:flex py-4'>
         <Navbar.Start>
           <Dropdown>
             <Button tag="label" color="ghost" shape="circle" tabIndex={0}>
