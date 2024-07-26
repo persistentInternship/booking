@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
-import { Navbar, Button, Input, Dropdown, Drawer, Menu, Modal } from 'react-daisyui';
+import React, { useState, useCallback } from 'react';
+import { Navbar, Button, Input, Dropdown, Drawer, Menu } from 'react-daisyui';
 import Link from 'next/link';
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from 'next/navigation';
+import LoginModal from '../components/LoginModel';
+import SignupModal from '../components/SignupModel';
 
 function NavBar() {
   const { data: session, status } = useSession();
@@ -13,16 +15,8 @@ function NavBar() {
   const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const loginRef = useRef<HTMLDialogElement>(null);
-  const signupRef = useRef<HTMLDialogElement>(null);
-
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
-  const [signupPhone, setSignupPhone] = useState('');
-
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -39,58 +33,12 @@ function NavBar() {
   }, []);
 
   const handleShowLoginModal = useCallback(() => {
-    loginRef.current?.showModal();
-  }, [loginRef]);
+    setIsLoginModalOpen(true);
+  }, []);
 
   const handleShowSignupModal = useCallback(() => {
-    signupRef.current?.showModal();
-  }, [signupRef]);
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (signupPassword !== signupConfirmPassword) {
-      alert("Passwords don't match");
-      return;
-    }
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: signupEmail, password: signupPassword, phone: signupPhone }),
-      });
-      if (response.ok) {
-        alert('Signup successful! Please log in.');
-        signupRef.current?.close();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Signup failed');
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
-      alert('An error occurred during signup');
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: loginEmail,
-        password: loginPassword,
-      });
-      if (result?.error) {
-        alert(result.error);
-      } else {
-        alert('Login successful!');
-        loginRef.current?.close();
-        window.location.reload(); // Refresh to update session state
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('An error occurred during login');
-    }
-  };
+    setIsSignupModalOpen(true);
+  }, []);
 
   const handleBookingsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -274,84 +222,14 @@ function NavBar() {
         </Menu>
       }>
       </Drawer>
-      <Modal ref={loginRef} className="bg-gray-800 text-white max-w-lg mx-auto p-4 rounded-lg">
-        <form onSubmit={handleLogin} method="dialog">
-          <Button size="sm" color="ghost" shape="circle" className="absolute right-2 top-2">
-            x
-          </Button>
-          <Modal.Header className="font-bold text-center">Login</Modal.Header>
-          <Modal.Body>
-            <div className="flex flex-col space-y-4">
-              <Input 
-                type="email" 
-                placeholder="Enter email" 
-                className="w-full bg-gray-700 text-white rounded-md p-2"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                required
-              />
-              <Input 
-                type="password" 
-                placeholder="Enter password" 
-                className="w-full bg-gray-700 text-white rounded-md p-2"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                required
-              />
-            </div>
-          </Modal.Body>
-          <Modal.Actions className="justify-center">
-            <Button type="submit" className='bg-gray-950 text-white w-full rounded-md p-2'>Login</Button>
-          </Modal.Actions>
-        </form>
-      </Modal>
-      <Modal ref={signupRef} className="bg-gray-800 text-white max-w-lg mx-auto p-4 rounded-lg">
-        <form onSubmit={handleSignup} method="dialog">
-          <Button size="sm" color="ghost" shape="circle" className="absolute right-2 top-2">
-            x
-          </Button>
-          <Modal.Header className="font-bold text-center">Sign up</Modal.Header>
-          <Modal.Body>
-            <div className="flex flex-col space-y-4">
-            <Input 
-                type="email" 
-                placeholder="Enter email" 
-                className="w-full bg-gray-700 text-white rounded-md p-2"
-                value={signupEmail}
-                onChange={(e) => setSignupEmail(e.target.value)}
-                required
-              />
-              <Input 
-                type="password" 
-                placeholder="Enter password" 
-                className="w-full bg-gray-700 text-white rounded-md p-2" 
-                value={signupPassword}
-                onChange={(e) => setSignupPassword(e.target.value)}
-                required
-              />
-              <Input 
-                type="password" 
-                placeholder="Confirm password" 
-                className="w-full bg-gray-700 text-white rounded-md p-2" 
-                value={signupConfirmPassword}
-                onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                required
-              />
-              <Input 
-                type="tel" 
-                placeholder="Enter phone number" 
-                className="w-full bg-gray-700 text-white rounded-md p-2" 
-                value={signupPhone}
-                onChange={(e) => setSignupPhone(e.target.value)}
-                required
-              />
-            </div>
-          </Modal.Body>
-          <Modal.Actions className="justify-center">
-            <Button type="submit" className='bg-gray-950 text-white w-full rounded-md p-2'>Proceed</Button>
-          </Modal.Actions>
-        </form>
-      </Modal>
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
+      <SignupModal 
+        isOpen={isSignupModalOpen} 
+        onClose={() => setIsSignupModalOpen(false)} 
+      />
       {showLoginPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg">
