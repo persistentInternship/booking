@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Indicates this is a client-side component
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,8 +6,8 @@ import { useSession } from "next-auth/react";
 import ServiceImages from './ServiceImages';
 import LoginModal from './LoginModel';
 
+// Define categories of home services
 const categories = [
-
   { name: "AC & Appliance Repair", icon: "/photo/3.webp" },
   { name: "Cleaning & Pest Control", icon: "/photo/4.webp" },
   { name: "Electrician, Plumber & Carpenter", icon: "/photo/5.webp" },
@@ -17,12 +17,14 @@ const categories = [
   { name: "Garden Cleaning", icon: "/photo/gardencleaning.jpg" },
   { name: "House Maid", icon: "/photo/housemaid.avif" },
 ];
+
 const HomeServices = () => {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession(); // Get session data and status
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
+  // Handle click on a service category
   const handleServiceClick = (categoryName: string) => {
     if (status === 'authenticated') {
       router.push(`/services?category=${encodeURIComponent(categoryName)}`);
@@ -31,6 +33,7 @@ const HomeServices = () => {
     }
   };
 
+  // Handlers for login modal and prompt
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false);
   };
@@ -47,6 +50,7 @@ const HomeServices = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col md:flex-row">
+        {/* Service categories section */}
         <div className="md:w-1/2 p-4">
           <h1 className="text-4xl font-bold mb-4">Home services at your doorstep</h1>
           <div className="bg-white p-4 rounded-lg shadow-md">
@@ -65,6 +69,7 @@ const HomeServices = () => {
             </div>
           </div>
         </div>
+        {/* Service images section (hidden on mobile) */}
         <div className="md:w-1/2 md:pt-20 hidden md:block">
           <ServiceImages />
         </div>

@@ -8,6 +8,7 @@ import NavBar from '@/app/components/NavBar';
 import Footer from '@/app/components/Footer';
 import Loading from '@/app/components/Loading';
 
+// Define Booking interface
 interface Booking {
   _id: string;
   serviceName: string;
@@ -19,6 +20,7 @@ interface Booking {
 }
 
 export default function BookingDetailPage({ params }: { params: { id: string } }) {
+  // State management
   const [booking, setBooking] = useState<Booking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +29,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   const router = useRouter();
 
   useEffect(() => {
+    // Fetch booking details
     const fetchBooking = async () => {
       try {
         const response = await fetch(`/api/bookings/${params.id}`);
@@ -53,6 +56,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
       console.log('Connected to server');
     });
 
+    // Handle real-time booking updates
     socket.on('bookingUpdate', (updatedBooking: Booking) => {
       console.log('Received booking update:', updatedBooking);
       if (updatedBooking._id === params.id) {
@@ -60,12 +64,14 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
       }
     });
 
+    // Clean up Socket.IO connection
     return () => {
       console.log('Disconnecting socket');
       socket.disconnect();
     };
   }, [params.id]);
 
+  // Handle booking cancellation
   const handleCancel = async () => {
     if (!booking) return;
 
@@ -91,6 +97,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     }
   };
 
+  // Switch to edit mode
   const handleEdit = () => {
     setIsEditing(true);
     setEditedBooking({
@@ -100,6 +107,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     });
   };
 
+  // Save edited booking
   const handleSave = async () => {
     if (!booking) return;
 
@@ -124,11 +132,13 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     }
   };
 
+  // Handle input changes in edit mode
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditedBooking(prev => ({ ...prev, [name]: value }));
   };
 
+  // Render loading state
   if (isLoading) {
     return (
       <>
@@ -139,6 +149,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     );
   }
 
+  // Render error state
   if (error) {
     return (
       <>
@@ -154,10 +165,12 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     );
   }
 
+  // Handle case when booking is not found
   if (!booking) {
     notFound();
   }
 
+  // Render booking details
   return (
     <>
       <NavBar />
@@ -235,6 +248,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   );
 }
 
+// Helper function to get status color
 function getStatusColor(status: string): string {
   switch (status) {
     case 'Pending': return 'bg-yellow-200 text-yellow-800';

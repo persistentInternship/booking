@@ -5,8 +5,11 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { compare } from "bcrypt"
 
 export const authOptions: NextAuthOptions = {
+  // Use MongoDB as the adapter for NextAuth
   adapter: MongoDBAdapter(clientPromise),
+  
   providers: [
+    // Set up Credentials provider
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -26,12 +29,14 @@ export const authOptions: NextAuthOptions = {
           throw new Error("No user found")
         }
 
+        // Compare provided password with stored hashed password
         const isPasswordValid = await compare(credentials.password, user.password)
 
         if (!isPasswordValid) {
           throw new Error("Invalid password")
         }
 
+        // Return user object if authentication is successful
         return {
           id: user._id.toString(),
           email: user.email,
@@ -40,16 +45,21 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
+  
+  // Use JWT for session handling
   session: {
     strategy: "jwt"
   },
+  
   callbacks: {
+    // Callback to add user id to the token
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
       }
       return token
     },
+    // Callback to add user id to the session
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id
@@ -57,8 +67,12 @@ export const authOptions: NextAuthOptions = {
       return session
     }
   },
+  
+  // Custom pages
   pages: {
-    signIn: '/',
+    signIn: '/', // Use the home page as the sign-in page
   },
+  
+  // Secret used to encrypt the NextAuth.js JWT
   secret: process.env.NEXTAUTH_SECRET
 }

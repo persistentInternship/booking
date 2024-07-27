@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import Loading from '../components/Loading';
@@ -42,9 +42,6 @@ const ServicesPage = () => {
     time: '',
   });
   const [noResults, setNoResults] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -94,32 +91,7 @@ const ServicesPage = () => {
     if (status === 'authenticated') {
       setShowBookingForm(true);
     } else {
-      setShowLoginForm(true);
-    }
-  };
-
-  const handleLoginRequired = useCallback(() => {
-    setShowLoginForm(true);
-  }, []);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: loginEmail,
-        password: loginPassword,
-      });
-      if (result?.error) {
-        alert(result.error);
-      } else {
-        alert('Login successful!');
-        setShowLoginForm(false);
-        window.location.reload(); // Refresh to update session state
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('An error occurred during login');
+      router.push('/login'); // Redirect to login page if not authenticated
     }
   };
 
@@ -302,52 +274,6 @@ const ServicesPage = () => {
                   onClick={() => setShowBookingForm(false)}
                 >
                   Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {showLoginForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Login</h2>
-            <form onSubmit={handleLogin}>
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 font-bold mb-2">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="password" className="block text-gray-700 font-bold mb-2">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  className="bg-gray-300 text-black px-4 py-2 rounded"
-                  onClick={() => setShowLoginForm(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-black text-white px-4 py-2 rounded"
-                >
-                  Login
                 </button>
               </div>
             </form>

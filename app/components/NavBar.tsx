@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Indicates this is a client-side component
 
 import React, { useState, useCallback } from 'react';
 import { Navbar, Button, Input, Dropdown, Drawer, Menu } from 'react-daisyui';
@@ -9,17 +9,20 @@ import LoginModal from '../components/LoginModel';
 import SignupModal from '../components/SignupModel';
 
 function NavBar() {
+  // Use Next.js authentication hook
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  // State management for various UI elements
   const [visible, setVisible] = useState(false);
   const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Memoized toggle functions to optimize performance
   const toggleVisible = useCallback(() => {
     setVisible(visible => !visible);
   }, []);
@@ -40,6 +43,7 @@ function NavBar() {
     setIsSignupModalOpen(true);
   }, []);
 
+  // Handle click on bookings link
   const handleBookingsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (status === 'authenticated') {
@@ -49,6 +53,7 @@ function NavBar() {
     }
   };
 
+  // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -65,6 +70,7 @@ function NavBar() {
         <Navbar.Start>
           <Dropdown>
             <Button tag="label" color="ghost" shape="circle" tabIndex={0}>
+              {/* Hamburger menu icon */}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
               </svg>
@@ -91,11 +97,13 @@ function NavBar() {
           </Link>
         </Navbar.Center>
         <Navbar.End className="navbar-end">
+          {/* Search button */}
           <Button color="ghost" shape="circle" onClick={toggleVisible}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </Button>
+          {/* Bookings button */}
           <Link href="/bookings" onClick={handleBookingsClick}>
             <Button color="ghost" shape="circle">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,6 +111,7 @@ function NavBar() {
               </svg>
             </Button>
           </Link>
+          {/* Profile dropdown */}
           <Dropdown>
             <Button color="ghost" shape="circle" onClick={toggleProfileDropdown}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -204,6 +213,7 @@ function NavBar() {
         </div>
       )}
 
+      {/* Search Drawer */}
       <Drawer open={visible} onClickOverlay={toggleVisible} className="drawer-left" side={
         <Menu className="p-4 w-80 h-full bg-base-200 text-base-content">
           <form onSubmit={handleSearch}>
@@ -222,6 +232,8 @@ function NavBar() {
         </Menu>
       }>
       </Drawer>
+
+      {/* Login and Signup Modals */}
       <LoginModal 
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
@@ -230,6 +242,8 @@ function NavBar() {
         isOpen={isSignupModalOpen} 
         onClose={() => setIsSignupModalOpen(false)} 
       />
+
+      {/* Login Popup */}
       {showLoginPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg">
