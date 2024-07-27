@@ -79,24 +79,6 @@ The MongoDB connection string and NextAuth secret in this example are placeholde
 
 Always follow best practices for securing your application and protecting sensitive data.
 
-## 📁 Project Structure
-app/
-├── api/
-├── bookings/
-├── services/
-├── components/
-└── model/
-lib/
-public/
-styles/
-.env.local
-next.config.js
-package.json
-README.md
-server.ts
-
-
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
