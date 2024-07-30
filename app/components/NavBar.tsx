@@ -1,14 +1,18 @@
-'use client'; // Indicates this is a client-side component
+'use client';
 
 import React, { useState, useCallback } from 'react';
 import { Navbar, Button, Input, Dropdown, Drawer, Menu } from 'react-daisyui';
 import Link from 'next/link';
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import LoginModal from '../components/LoginModel';
-import SignupModal from '../components/SignupModel';
+import LoginModal from './LoginModel';
+import SignupModal from './SignupModel';
+import { useStyles } from '../contexts/StyleContext';
 
 function NavBar() {
+  // Use the StyleContext
+  const { styles } = useStyles();
+
   // Use Next.js authentication hook
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -66,7 +70,7 @@ function NavBar() {
   return (
     <>
       {/* Large Screen Navbar */}
-      <Navbar className='bg-gray-950 text-white hidden lg:flex'>
+      <Navbar className={`${styles.backgroundColor} ${styles.textColor} hidden lg:flex`}>
         <Navbar.Start>
           <Dropdown>
             <Button tag="label" color="ghost" shape="circle" tabIndex={0}>
@@ -75,7 +79,7 @@ function NavBar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
               </svg>
             </Button>
-            <Dropdown.Menu className="menu-sm w-52 mt-3 z-[1] text-black">
+            <Dropdown.Menu className={`menu-sm w-52 mt-3 z-[1] ${styles.backgroundColor} ${styles.textColor}`}>
               <Dropdown.Item>
                 <Link href="/">Home</Link>
               </Dropdown.Item>
@@ -91,7 +95,7 @@ function NavBar() {
         <Navbar.Center>
           <Link href="/">
             <Button tag="a" color="ghost" className="normal-case text-xl">
-              <img src="/photo/door.svg" alt="Door" className="inline-block h-5 w-5 mr-2 bg-white" />
+              <img src="/photo/door.svg" alt="Door" className={`inline-block h-5 w-5 mr-2 ${styles.logoColor}`} />
               DoorDash
             </Button>
           </Link>
@@ -119,20 +123,20 @@ function NavBar() {
               </svg>
             </Button>
             {profileDropdownVisible && (
-              <Dropdown.Menu className="menu-sm w-52 mt-3 z-[1] text-black right-0">
+              <Dropdown.Menu className={`menu-sm w-52 mt-3 z-[1] ${styles.backgroundColor} ${styles.textColor} right-0`}>
                 {status === 'authenticated' ? (
                   <>
                     <Dropdown.Item>
-                      <Button onClick={() => signOut()}>Logout</Button>
+                      <Button onClick={() => signOut()} className={`${styles.buttonColor} ${styles.textColor}`}>Logout</Button>
                     </Dropdown.Item>
                   </>
                 ) : (
                   <>
                     <Dropdown.Item>
-                      <Button onClick={handleShowLoginModal}>Login</Button>
+                      <Button onClick={handleShowLoginModal} className={`${styles.buttonColor} ${styles.textColor}`}>Login</Button>
                     </Dropdown.Item>
                     <Dropdown.Item>
-                      <Button onClick={handleShowSignupModal}>Signup</Button>
+                      <Button onClick={handleShowSignupModal} className={`${styles.buttonColor} ${styles.textColor}`}>Signup</Button>
                     </Dropdown.Item>
                   </>
                 )}
@@ -143,7 +147,7 @@ function NavBar() {
       </Navbar>
 
       {/* Small Screen Navbar */}
-      <Navbar className='bg-gray-950 text-white lg:hidden'>
+      <Navbar className={`${styles.backgroundColor} ${styles.textColor} lg:hidden`}>
         <Navbar.Start>
           <Button color="ghost" onClick={toggleMobileMenu}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -153,7 +157,7 @@ function NavBar() {
         </Navbar.Start>
         <Navbar.Center className="flex-1 justify-center">
           <Link href="/" className="flex items-center">
-            <img src="/photo/door.svg" alt="Door" className="h-8 w-8 mr-2" />
+            <img src="/photo/door.svg" alt="Door" className={`h-8 w-8 mr-2 ${styles.logoColor}`} />
             <span className="text-xl font-bold">DoorDash</span>
           </Link>
         </Navbar.Center>
@@ -172,20 +176,20 @@ function NavBar() {
               </svg>
             </Button>
             {profileDropdownVisible && (
-              <Dropdown.Menu className="menu-sm w-52 mt-3 z-[1] text-black right-0">
+              <Dropdown.Menu className={`menu-sm w-52 mt-3 z-[1] ${styles.backgroundColor} ${styles.textColor} right-0`}>
                 {status === 'authenticated' ? (
                   <>
                     <Dropdown.Item>
-                      <Button onClick={() => signOut()}>Logout</Button>
+                      <Button onClick={() => signOut()} className={`${styles.buttonColor} ${styles.textColor}`}>Logout</Button>
                     </Dropdown.Item>
                   </>
                 ) : (
                   <>
                     <Dropdown.Item>
-                      <Button onClick={handleShowLoginModal}>Login</Button>
+                      <Button onClick={handleShowLoginModal} className={`${styles.buttonColor} ${styles.textColor}`}>Login</Button>
                     </Dropdown.Item>
                     <Dropdown.Item>
-                      <Button onClick={handleShowSignupModal}>Signup</Button>
+                      <Button onClick={handleShowSignupModal} className={`${styles.buttonColor} ${styles.textColor}`}>Signup</Button>
                     </Dropdown.Item>
                   </>
                 )}
@@ -197,7 +201,7 @@ function NavBar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-gray-950 text-white p-4">
+        <div className={`lg:hidden ${styles.backgroundColor} ${styles.textColor} p-4`}>
           <Link href="/" className="block py-2">Home</Link>
           <Link href="/contact_us" className="block py-2">Contact Us</Link>
           <Link href="/about" className="block py-2">About</Link>
@@ -208,14 +212,14 @@ function NavBar() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Button type="submit" className="w-full bg-black text-white">Search</Button>
+            <Button type="submit" className={`w-full ${styles.buttonColor} ${styles.textColor} ${styles.hoverColor}`}>Search</Button>
           </form>
         </div>
       )}
 
       {/* Search Drawer */}
       <Drawer open={visible} onClickOverlay={toggleVisible} className="drawer-left" side={
-        <Menu className="p-4 w-80 h-full bg-base-200 text-base-content">
+        <Menu className={`p-4 w-80 h-full ${styles.backgroundColor} ${styles.textColor}`}>
           <form onSubmit={handleSearch}>
             <Menu.Item className="mb-4">
               <Input 
@@ -226,7 +230,7 @@ function NavBar() {
               />
             </Menu.Item>
             <Menu.Item>
-              <Button type="submit" className="w-full bg-black text-white">Search</Button>
+              <Button type="submit" className={`w-full ${styles.buttonColor} ${styles.textColor} ${styles.hoverColor}`}>Search</Button>
             </Menu.Item>
           </form>
         </Menu>
@@ -246,13 +250,13 @@ function NavBar() {
       {/* Login Popup */}
       {showLoginPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Login Required</h2>
-            <p className="mb-4 text-gray-600">Please log in to view your bookings.</p>
+          <div className={`${styles.backgroundColor} p-6 rounded-lg`}>
+            <h2 className={`text-xl font-bold mb-4 ${styles.textColor}`}>Login Required</h2>
+            <p className={`mb-4 ${styles.textColor}`}>Please log in to view your bookings.</p>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setShowLoginPopup(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                className={`px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300`}
               >
                 Cancel
               </button>
@@ -261,7 +265,7 @@ function NavBar() {
                   setShowLoginPopup(false);
                   handleShowLoginModal();
                 }}
-                className="px-4 py-2 bg-black text-white rounded hover:bg-black"
+                className={`px-4 py-2 ${styles.buttonColor} ${styles.textColor} rounded ${styles.hoverColor}`}
               >
                 Login
               </button>
