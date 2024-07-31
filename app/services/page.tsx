@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import Loading from '../components/Loading';
+import { useStyles } from '../contexts/StyleContext';
 
 interface Service {
   _id: string;
@@ -42,6 +43,7 @@ const ServicesPage = () => {
     time: '',
   });
   const [noResults, setNoResults] = useState(false);
+  const { styles } = useStyles();
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -186,13 +188,13 @@ const ServicesPage = () => {
             <p className="text-gray-800 mb-4">{selectedService.description}</p>
             <div className="flex justify-end space-x-4">
               <button
-                className="bg-black text-white px-4 py-2 rounded"
+                className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded`}
                 onClick={handleBooking}
               >
                 Book
               </button>
               <button
-                className="bg-black text-white px-4 py-2 rounded"
+                className={`${styles.backgroundColor} ${styles.textColor} px-4 py-2 rounded`}
                 onClick={() => setSelectedService(null)}
               >
                 Close
@@ -257,20 +259,20 @@ const ServicesPage = () => {
               <div className="flex justify-end space-x-4">
                 <button
                   type="submit"
-                  className="bg-black text-white px-4 py-2 rounded"
+                  className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded`}
                 >
                   Submit Booking
                 </button>
                 <button
                   type="button"
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  className={`${styles.backgroundColor} ${styles.textColor} px-4 py-2 rounded`}
                   onClick={resetBookingForm}
                 >
                   Reset
                 </button>
                 <button
                   type="button"
-                  className="bg-black text-white px-4 py-2 rounded"
+                  className={`${styles.backgroundColor} ${styles.textColor} px-4 py-2 rounded`}
                   onClick={() => setShowBookingForm(false)}
                 >
                   Cancel

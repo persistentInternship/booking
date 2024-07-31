@@ -7,6 +7,8 @@ import io from 'socket.io-client';
 import NavBar from '@/app/components/NavBar';
 import Footer from '@/app/components/Footer';
 import Loading from '@/app/components/Loading';
+import { useStyles } from '@/app/contexts/StyleContext';
+import { bgColors } from 'react-daisyui/dist/constants';
 
 // Define Booking interface
 interface Booking {
@@ -20,6 +22,7 @@ interface Booking {
 }
 
 export default function BookingDetailPage({ params }: { params: { id: string } }) {
+  const { styles } = useStyles();
   // State management
   const [booking, setBooking] = useState<Booking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,18 +144,18 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   // Render loading state
   if (isLoading) {
     return (
-      <>
+      <div >
         <NavBar />
         <Loading/>
         <Footer />
-      </>
+      </div>
     );
   }
 
   // Render error state
   if (error) {
     return (
-      <>
+      <div className={styles.backgroundColor}>
         <NavBar />
         <div className="container mx-auto mt-8 px-4">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -161,7 +164,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
           </div>
         </div>
         <Footer />
-      </>
+      </div>
     );
   }
 
@@ -172,11 +175,11 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
 
   // Render booking details
   return (
-    <>
+    <div className="bg-white">
       <NavBar />
       <div className="container mx-auto mt-8 px-4">
-        <Link href="/bookings" className="text-black hover:underline mb-4 inline-block">&larr; Back to Bookings</Link>
-        <h1 className="text-3xl font-bold mb-6">Booking Details</h1>
+        <Link href="/bookings" className="text-black   hover:underline mb-4 inline-block ">&larr; Back to Bookings</Link>
+        <h1 className={`text-3xl font-bold mb-6 ${styles.textColor}`}>Booking Details</h1>
         <div className="bg-white shadow-md rounded-lg p-6">
           <p className="text-sm text-gray-600 mb-2">Booking ID: {booking._id}</p>
           <h2 className="text-2xl font-semibold mb-4">{booking.serviceName}</h2>
@@ -220,14 +223,14 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
           {isEditing ? (
             <button
               onClick={handleSave}
-              className="bg-black text-white px-4 py-2 rounded mr-2"
+              className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded mr-2`}
             >
               Save Changes
             </button>
           ) : (
             <button
               onClick={handleEdit}
-              className="bg-black text-white px-4 py-2 rounded mr-2"
+              className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded mr-2`}
             >
               Edit Booking
             </button>
@@ -236,7 +239,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
           {booking.status !== 'Cancelled' && (
             <button
               onClick={handleCancel}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded hover:opacity-80`}
             >
               Cancel Booking
             </button>
@@ -244,7 +247,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
 

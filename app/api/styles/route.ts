@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { defaultStyles } from '@/app/components/DefaultStyle';
 
-const defaultStyles = {
-  backgroundColor: 'bg-gray-950',
-  textColor: 'text-white',
-  buttonColor: 'bg-black',
-  logoColor: 'bg-white',
-  hoverColor: 'hover:bg-gray-800'
-};
+
 
 export async function getStyles() {
   try {

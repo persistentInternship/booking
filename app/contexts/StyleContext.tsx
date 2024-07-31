@@ -1,6 +1,8 @@
 'use client';
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { defaultStyles } from '../components/DefaultStyle';
+
 
 interface StyleContextType {
   styles: {
@@ -13,13 +15,6 @@ interface StyleContextType {
   setStyles: React.Dispatch<React.SetStateAction<StyleContextType['styles']>>;
 }
 
-const defaultStyles: StyleContextType['styles'] = {
-  backgroundColor: 'bg-gray-950',
-  textColor: 'text-white',
-  buttonColor: 'bg-black',
-  logoColor: 'bg-white',
-  hoverColor: 'hover:bg-gray-800'
-};
 
 const StyleContext = createContext<StyleContextType | undefined>(undefined);
 

@@ -9,6 +9,8 @@ import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import Loading from '../components/Loading';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { useStyles } from '../contexts/StyleContext';
+
 
 // Define Booking interface
 interface Booking {
@@ -26,6 +28,7 @@ export default function BookingsPage() {
   // Use Next.js hooks
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { styles } = useStyles();
 
   // State management
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -58,7 +61,7 @@ export default function BookingsPage() {
         console.log('Received booking update:', updatedBooking);
         if (updatedBooking && updatedBooking._id) {
           setBookings(prevBookings => {
-            const updatedBookings = prevBookings.map(booking => 
+            const updatedBookings = prevBookings.map(booking =>
               booking._id === updatedBooking._id ? updatedBooking : booking
             );
             console.log('Updated bookings:', updatedBookings);
@@ -137,7 +140,7 @@ export default function BookingsPage() {
   // Render error state
   if (error) {
     return (
-      <>
+      <div className={styles.backgroundColor}>
         <NavBar />
         <div className="container mx-auto mt-8 px-4">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -146,7 +149,7 @@ export default function BookingsPage() {
           </div>
         </div>
         <Footer />
-      </>
+      </div>
     );
   }
 
@@ -229,11 +232,10 @@ export default function BookingsPage() {
                       <button
                         key={number}
                         onClick={() => paginate(number)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                          number === currentPage
-                            ? 'z-10 bg-black text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                        }`}
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${number === currentPage
+                            ? `z-10 ${styles.backgroundColor} ${styles.textColor} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`
+                            : `${styles.textColor} ring-1 ring-inset ring-gray-300 hover:${styles.hoverColor} focus:z-20 focus:outline-offset-0`
+                          }`}
                       >
                         {number}
                       </button>
