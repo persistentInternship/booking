@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { signIn } from "next-auth/react";
+import { useStyles } from '../contexts/StyleContext';
 
 // Define props interface for LoginModal
 interface LoginModalProps {
@@ -9,6 +10,7 @@ interface LoginModalProps {
 
 // LoginModal component definition
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
+  const { styles } = useStyles();
   // State for email and password inputs
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -41,9 +43,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
   // Render login modal
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className={`fixed inset-0 ${styles.backgroundColor} bg-opacity-50 flex items-center justify-center p-4 z-50`}>
       <div className="bg-white p-6 rounded-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4">Login</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Login</h2>
         <form onSubmit={handleLogin}>
           {/* Email input */}
           <div className="mb-4">
@@ -73,14 +75,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              className="bg-gray-300 text-black px-4 py-2 rounded"
+              className={`${styles.buttonColor} text-white px-4 py-2 rounded`}
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-black text-white px-4 py-2 rounded"
+              className={`${styles.buttonColor} text-white px-4 py-2 rounded`}
             >
               Login
             </button>

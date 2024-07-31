@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useStyles } from '../contexts/StyleContext';
 
 // Define props interface for SignupModal
 interface SignupModalProps {
@@ -8,6 +9,7 @@ interface SignupModalProps {
 
 // SignupModal component definition
 const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => {
+  const { styles } = useStyles();
   // State for form inputs
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -47,9 +49,9 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => {
 
   // Render signup modal
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className={`fixed inset-0 ${styles.backgroundColor} bg-opacity-50 flex items-center justify-center p-4 z-50`}>
       <div className="bg-white p-6 rounded-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4">Sign up</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Sign up</h2>
         <form onSubmit={handleSignup}>
           {/* Email input */}
           <div className="mb-4">
@@ -103,14 +105,14 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              className="bg-gray-300 text-black px-4 py-2 rounded"
+              className={`${styles.backgroundColor} ${styles.textColor} px-4 py-2 rounded`}
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-black text-white px-4 py-2 rounded"
+              className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded`}
             >
               Sign up
             </button>

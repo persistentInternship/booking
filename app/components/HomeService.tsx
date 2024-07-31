@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import ServiceImages from './ServiceImages';
 import LoginModal from './LoginModel';
+import { useStyles } from '../contexts/StyleContext';
 
 // Define categories of home services
 const categories = [
@@ -23,6 +24,7 @@ const HomeServices = () => {
   const { data: session, status } = useSession(); // Get session data and status
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const { styles } = useStyles();
 
   // Handle click on a service category
   const handleServiceClick = (categoryName: string) => {
@@ -84,13 +86,13 @@ const HomeServices = () => {
             <div className="flex justify-end space-x-4">
               <button
                 onClick={handleCloseLoginPrompt}
-                className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+                className={`px-4 py-2 ${styles.backgroundColor} ${styles.textColor} rounded hover:opacity-80`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleOpenLoginModal}
-                className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+                className={`px-4 py-2 ${styles.buttonColor} ${styles.textColor} rounded hover:opacity-80`}
               >
                 Login
               </button>
