@@ -32,13 +32,15 @@ This project is a comprehensive booking management system built with Next.js, Re
 
 ## 🔌 WebSocket Integration
 ###This project uses Socket.IO for real-time updates. The integration is implemented in two main parts:
+**Install Socket.IO**:
+   ```bash
+   npm install socket.io
+```
 ### Server-Side Integration
    - Sets up an Express server with Socket.IO
    - Connects to MongoDB and watches for changes in the bookings collection
    - Emits 'bookingUpdate' events when changes are detected
-**Install Socket.IO**:
-   ```bash
-   npm install socket.io
+
   
 ## Usage/Examples
 ```typescript
