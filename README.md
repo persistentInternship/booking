@@ -30,20 +30,96 @@ This project is a comprehensive booking management system built with Next.js, Re
 - `/api/bookings/[id]`: Handles fetching, updating, and cancelling individual bookings.
 - `/api/services`: Handles fetching and creating services.
 
-## 🔌 Socket.IO Integration
+## 🔌 WebSocket Integration
+
+### Server-Side Integration
+
+1. **Install Socket.IO**:
+   ```bash
+   npm install socket.io
+
 
 This project uses Socket.IO for real-time updates. The integration is implemented in two main parts:
+
 
 1. Server-side (`server.ts`):
    - Sets up an Express server with Socket.IO
    - Connects to MongoDB and watches for changes in the bookings collection
    - Emits 'bookingUpdate' events when changes are detected
+## Usage/Examples
+```typescript
+   // server.ts
+import express from 'express';
+import { Server } from 'socket.io';
+import http from 'http';
 
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+// Handle WebSocket connections
+io.on('connection', (socket) => {
+  console.log('A client connected');
+
+  // Send a welcome message to the new client
+  socket.emit('message', 'Hello from the server!');
+
+  // Handle client messages
+  socket.on('clientMessage', (msg) => {
+    console.log('Message from client:', msg);
+    // Broadcast message to all clients
+    io.emit('message', msg);
+  });
+
+  // Handle client disconnection
+  socket.on('disconnect', () => {
+    console.log('A client disconnected');
+  });
+});
+
+// Start the server
+server.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
+
+```
 2. Client-side (`BookingDetailPage.tsx`):
    - Establishes a Socket.IO connection
    - Listens for 'bookingUpdate' events
    - Updates the UI in real-time when booking data changes
 
+## Usage/Examples
+```typescript
+   //Client side
+   import React, { useEffect, useState } from 'react';
+import io from 'socket.io-client';
+
+const BookingDetailPage: React.FC = () => {
+  const [messages, setMessages] = useState<string[]>([]);
+  const [input, setInput] = useState<string>('');
+
+  useEffect(() => {
+    // Connect to the WebSocket server
+    const socket = io('http://localhost:3000');
+
+    // Listen for messages from the server
+    socket.on('message', (message: string) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    // Send the message to the server
+    const sendMessage = (msg: string) => {
+      socket.emit('clientMessage', msg);
+      setInput('');
+    };
+
+    // Clean up the connection on component unmount
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+```
 This setup enables instant updates across all connected clients whenever a booking is modified, ensuring a synchronized user experience.
 
 ## 🏁 Getting Started
