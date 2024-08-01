@@ -31,21 +31,15 @@ This project is a comprehensive booking management system built with Next.js, Re
 - `/api/services`: Handles fetching and creating services.
 
 ## 🔌 WebSocket Integration
-
+###This project uses Socket.IO for real-time updates. The integration is implemented in two main parts:
 ### Server-Side Integration
-
-1. **Install Socket.IO**:
-   ```bash
-   npm install socket.io
-
-
-This project uses Socket.IO for real-time updates. The integration is implemented in two main parts:
-
-
-1. Server-side (`server.ts`):
    - Sets up an Express server with Socket.IO
    - Connects to MongoDB and watches for changes in the bookings collection
    - Emits 'bookingUpdate' events when changes are detected
+**Install Socket.IO**:
+   ```bash
+   npm install socket.io
+  
 ## Usage/Examples
 ```typescript
    // server.ts
@@ -83,7 +77,7 @@ server.listen(3000, () => {
 });
 
 ```
-2. Client-side (`BookingDetailPage.tsx`):
+### Client-Side Integration
    - Establishes a Socket.IO connection
    - Listens for 'bookingUpdate' events
    - Updates the UI in real-time when booking data changes
