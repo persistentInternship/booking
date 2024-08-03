@@ -41,7 +41,6 @@ nextApp.prepare().then(async () => {
       const updatedBooking = await bookingsCollection.findOne({ _id: change.documentKey._id });
 
       if (updatedBooking) {
-        // Send push notification
         const subscriptions = await db.collection('pushSubscriptions').find({}).toArray();
         for (const subscriptionDoc of subscriptions) {
           try {
@@ -60,6 +59,10 @@ nextApp.prepare().then(async () => {
             }));
           } catch (error) {
             console.error('Error sending push notification:', error);
+            if (error instanceof Error && 'statusCode' in error && (error as any).statusCode === 410) {
+              console.log('Removing expired subscription:', subscriptionDoc.endpoint);
+              await db.collection('pushSubscriptions').deleteOne({ endpoint: subscriptionDoc.endpoint });
+            }
           }
         }
       } else {
