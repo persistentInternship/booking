@@ -57,11 +57,13 @@ nextApp.prepare().then(async () => {
               body: `Booking status changed to ${updatedBooking.status}`,
               data: updatedBooking
             }));
+            console.log('Notification sent successfully to:', subscriptionDoc.endpoint);
           } catch (error) {
-            console.error('Error sending push notification:', error);
             if (error instanceof Error && 'statusCode' in error && (error as any).statusCode === 410) {
               console.log('Removing expired subscription:', subscriptionDoc.endpoint);
               await db.collection('pushSubscriptions').deleteOne({ endpoint: subscriptionDoc.endpoint });
+            } else {
+              console.error('Error sending push notification:', error);
             }
           }
         }
