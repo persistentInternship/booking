@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import io from 'socket.io-client';
 import NavBar from '@/app/components/NavBar';
 import Footer from '@/app/components/Footer';
 import Loading from '@/app/components/Loading';
@@ -32,47 +31,63 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch booking details
-    const fetchBooking = async () => {
-      try {
-        const response = await fetch(`/api/bookings/${params.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch booking');
-        }
-        const data = await response.json();
-        console.log('Fetched booking data:', data);
-        setBooking(data);
-      } catch (error) {
-        console.error('Error fetching booking:', error);
-        setError('Failed to fetch booking details');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchBooking();
-
-    // Set up Socket.IO connection
-    const socket = io();
-
-    socket.on('connect', () => {
-      console.log('Connected to server');
-    });
-
-    // Handle real-time booking updates
-    socket.on('bookingUpdate', (updatedBooking: Booking) => {
-      console.log('Received booking update:', updatedBooking);
-      if (updatedBooking._id === params.id) {
-        setBooking(updatedBooking);
-      }
-    });
-
-    // Clean up Socket.IO connection
-    return () => {
-      console.log('Disconnecting socket');
-      socket.disconnect();
-    };
+    setupPushNotifications();
   }, [params.id]);
+
+  const setupPushNotifications = async () => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      try {
+        const registration = await navigator.serviceWorker.register('/service-worker.js');
+        console.log('Service Worker registered successfully');
+
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          const response = await fetch('/api/vapidPublicKey');
+          const { publicKey } = await response.json();
+
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: publicKey
+          });
+
+          await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+          });
+
+          console.log('Push notification subscription successful');
+
+          navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'BOOKING_UPDATE' && event.data.booking._id === params.id) {
+              console.log('Received booking update:', event.data.booking);
+              setBooking(event.data.booking);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error setting up push notifications:', error);
+      }
+    }
+  };
+
+  const fetchBooking = async () => {
+    try {
+      const response = await fetch(`/api/bookings/${params.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch booking');
+      }
+      const data = await response.json();
+      console.log('Fetched booking data:', data);
+      setBooking(data);
+    } catch (error) {
+      console.error('Error fetching booking:', error);
+      setError('Failed to fetch booking details');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Handle booking cancellation
   const handleCancel = async () => {
