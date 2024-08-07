@@ -159,11 +159,12 @@ export default function BookingsPage() {
       <NavBar />
       <div className="container mx-auto mt-8 px-4">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">My Bookings</h1>
+          <h1 className="text-3xl font-bold" style={{ color: styles.textColor }}>My Bookings</h1>
           <select
             className="border rounded px-2 py-1"
             value={sortOption}
             onChange={(e) => sortBookings(e.target.value as SortOption)}
+            style={{ color: styles.textColor }}
           >
             <option value="dateDesc">Date (Newest First)</option>
             <option value="dateAsc">Date (Oldest First)</option>
@@ -172,7 +173,7 @@ export default function BookingsPage() {
           </select>
         </div>
         {bookings.length === 0 ? (
-          <p>You have no bookings.</p>
+          <p style={{ color: styles.textColor }}>You have no bookings.</p>
         ) : (
           <>
             <ul className="space-y-4">
@@ -181,13 +182,24 @@ export default function BookingsPage() {
                   <Link href={`/bookings/${booking._id}`}>
                     <div className="flex justify-between items-center">
                       <div>
-                        <h3 className="text-lg font-semibold">{booking.serviceName}</h3>
-                        <p className="text-sm text-gray-600">Date: {new Date(booking.dateTime).toLocaleString()}</p>
-                        <p className="text-sm text-gray-600">Cost: ${booking.cost.toFixed(2)}</p>
+                        <h3 className="text-lg font-semibold" style={{ color: styles.textColor }}>{booking.serviceName}</h3>
+                        <p className="text-sm" style={{ color: styles.textColor }}>Date: {new Date(booking.dateTime).toLocaleString()}</p>
+                        <p className="text-sm" style={{ color: styles.textColor }}>Cost: ${booking.cost.toFixed(2)}</p>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(booking.status)}`}>
-                        {booking.status}
-                      </span>
+                      <div>
+                        <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(booking.status)}`}>
+                          {booking.status}
+                        </span>
+                        <button 
+                          className="ml-2 px-3 py-1 rounded text-sm"
+                          style={{ 
+                            backgroundColor: styles.buttonColor, 
+                            color: styles.textColor
+                          }}
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
                   </Link>
                 </li>
@@ -200,6 +212,7 @@ export default function BookingsPage() {
                   onClick={() => paginate(currentPage - 1)}
                   disabled={currentPage === 1}
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  style={{ color: styles.textColor }}
                 >
                   <span className="sr-only">Previous</span>
                   <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -213,6 +226,7 @@ export default function BookingsPage() {
                         ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
                         : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                       }`}
+                    style={{ color: number === currentPage ? styles.textColor : styles.textColor }}
                   >
                     {number}
                   </button>
@@ -221,6 +235,7 @@ export default function BookingsPage() {
                   onClick={() => paginate(currentPage + 1)}
                   disabled={currentPage === totalPages}
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  style={{ color: styles.textColor }}
                 >
                   <span className="sr-only">Next</span>
                   <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />

@@ -7,7 +7,6 @@ import NavBar from '@/app/components/NavBar';
 import Footer from '@/app/components/Footer';
 import Loading from '@/app/components/Loading';
 import { useStyles } from '@/app/contexts/StyleContext';
-import { bgColors } from 'react-daisyui/dist/constants';
 
 // Define Booking interface
 interface Booking {
@@ -193,11 +192,11 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     <div className="bg-white">
       <NavBar />
       <div className="container mx-auto mt-8 px-4">
-        <Link href="/bookings" className="text-black   hover:underline mb-4 inline-block ">&larr; Back to Bookings</Link>
+        <Link href="/bookings" className="text-black hover:underline mb-4 inline-block" style={{ color: styles.textColor }}>&larr; Back to Bookings</Link>
         <h1 className={`text-3xl font-bold mb-6 ${styles.textColor}`}>Booking Details</h1>
         <div className="bg-white shadow-md rounded-lg p-6">
-          <p className="text-sm text-gray-600 mb-2">Booking ID: {booking._id}</p>
-          <h2 className="text-2xl font-semibold mb-4">{booking.serviceName}</h2>
+          <p className={`text-sm mb-2 ${styles.textColor}`}>Booking ID: {booking._id}</p>
+          <h2 className={`text-2xl font-semibold mb-4 ${styles.textColor}`}>{booking.serviceName}</h2>
           
           {isEditing ? (
             <>
@@ -207,6 +206,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                 value={editedBooking.name || ''}
                 onChange={handleInputChange}
                 className="mb-2 p-2 border rounded w-full"
+                style={{ color: styles.textColor }}
               />
               <input
                 type="email"
@@ -214,6 +214,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                 value={editedBooking.email || ''}
                 onChange={handleInputChange}
                 className="mb-2 p-2 border rounded w-full"
+                style={{ color: styles.textColor }}
               />
               <input
                 type="datetime-local"
@@ -221,31 +222,40 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                 value={editedBooking.dateTime ? new Date(editedBooking.dateTime).toISOString().slice(0, 16) : ''}
                 onChange={handleInputChange}
                 className="mb-2 p-2 border rounded w-full"
+                style={{ color: styles.textColor }}
               />
             </>
           ) : (
             <>
-              <p className="mb-2">Date: {new Date(booking.dateTime).toLocaleString()}</p>
-              <p className="mb-2">Cost: ${booking.cost.toFixed(2)}</p>
-              <p className="mb-4">Status: <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(booking.status)}`}>{booking.status}</span></p>
+              <p className={`mb-2 ${styles.textColor}`}>Date: {new Date(booking.dateTime).toLocaleString()}</p>
+              <p className={`mb-2 ${styles.textColor}`}>Cost: ${booking.cost.toFixed(2)}</p>
+              <p className={`mb-4 ${styles.textColor}`}>Status: <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(booking.status)}`}>{booking.status}</span></p>
               
-              <h3 className="text-xl font-semibold mt-6 mb-2">Customer Information</h3>
-              <p className="mb-1">Name: {booking.name}</p>
-              <p className="mb-4">Email: {booking.email}</p>
+              <h3 className={`text-xl font-semibold mt-6 mb-2 ${styles.textColor}`}>Customer Information</h3>
+              <p className={`mb-1 ${styles.textColor}`}>Name: {booking.name}</p>
+              <p className={`mb-4 ${styles.textColor}`}>Email: {booking.email}</p>
             </>
           )}
           
           {isEditing ? (
             <button
               onClick={handleSave}
-              className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded mr-2`}
+              className="px-4 py-2 rounded mr-2"
+              style={{ 
+                backgroundColor: styles.buttonColor, 
+                color: styles.textColor
+              }}
             >
               Save Changes
             </button>
           ) : (
             <button
               onClick={handleEdit}
-              className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded mr-2`}
+              className="px-4 py-2 rounded mr-2"
+              style={{ 
+                backgroundColor: styles.buttonColor, 
+                color: styles.textColor
+              }}
             >
               Edit Booking
             </button>
@@ -254,7 +264,11 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
           {booking.status !== 'Cancelled' && (
             <button
               onClick={handleCancel}
-              className={`${styles.buttonColor} ${styles.textColor} px-4 py-2 rounded hover:opacity-80`}
+              className="px-4 py-2 rounded hover:opacity-80"
+              style={{ 
+                backgroundColor: styles.buttonColor, 
+                color: styles.textColor
+              }}
             >
               Cancel Booking
             </button>

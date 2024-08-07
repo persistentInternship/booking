@@ -1,63 +1,71 @@
 'use client';
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { defaultStyles } from '../components/DefaultStyle';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { defaultStyles, StyleType } from '../components/DefaultStyle';
+import { useSession } from 'next-auth/react';
 
+declare module 'next-auth' {
+  interface Session {
+    user?: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
 
 interface StyleContextType {
-  styles: {
-    backgroundColor: string;
-    textColor: string;
-    buttonColor: string;
-    logoColor: string;
-    hoverColor: string;
-  };
-  setStyles: React.Dispatch<React.SetStateAction<StyleContextType['styles']>>;
+  styles: StyleType;
+  setStyles: React.Dispatch<React.SetStateAction<StyleType>>;
+  isLoading: boolean;
 }
 
+const StyleContext = createContext<StyleContextType>({
+  styles: defaultStyles,
+  setStyles: () => {},
+  isLoading: true,
+});
 
-const StyleContext = createContext<StyleContextType | undefined>(undefined);
-
-interface StyleProviderProps {
-  children: React.ReactNode;
-  initialStyles?: StyleContextType['styles'];
-}
-
-export function StyleProvider({ children, initialStyles = defaultStyles }: StyleProviderProps) {
-  const [styles, setStyles] = useState(initialStyles);
+export function StyleProvider({ children }: { children: React.ReactNode }) {
+  const [styles, setStyles] = useState<StyleType>(defaultStyles);
+  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     async function fetchStyles() {
-      try {
-        const response = await fetch('/api/styles');
-        if (!response.ok) {
-          throw new Error('Failed to fetch styles');
+      if (status === 'authenticated') {
+        try {
+          const res = await fetch('/api/getStyle');
+          if (!res.ok) {
+            throw new Error('Failed to fetch styles');
+          }
+          const data = await res.json();
+          if (data && Object.keys(data).length > 0) {
+            setStyles(data);
+          }
+        } catch (error) {
+          console.error('Error fetching styles:', error);
+          // Fallback to default styles if there's an error
+          setStyles(defaultStyles);
         }
-        const data = await response.json();
-        setStyles(data);
-      } catch (error) {
-        console.error('Error fetching styles:', error);
-        // Fallback to initial styles if fetch fails
+      } else {
+        // Use default styles for non-logged-in users
+        setStyles(defaultStyles);
       }
+      setIsLoading(false);
     }
 
-    // Only fetch if initialStyles are the default styles
-    if (JSON.stringify(initialStyles) === JSON.stringify(defaultStyles)) {
-      fetchStyles();
-    }
-  }, [initialStyles]);
+    fetchStyles();
+  }, [status]);
 
   return (
-    <StyleContext.Provider value={{ styles, setStyles }}>
+    <StyleContext.Provider value={{ styles, setStyles, isLoading }}>
       {children}
     </StyleContext.Provider>
   );
 }
 
 export function useStyles() {
-  const context = useContext(StyleContext);
-  if (context === undefined) {
-    throw new Error('useStyles must be used within a StyleProvider');
-  }
-  return context;
+  return useContext(StyleContext);
 }
