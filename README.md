@@ -30,93 +30,101 @@ This project is a comprehensive booking management system built with Next.js, Re
 - `/api/bookings/[id]`: Handles fetching, updating, and cancelling individual bookings.
 - `/api/services`: Handles fetching and creating services.
 
-## 🔌 WebSocket Integration
-###This project uses Socket.IO for real-time updates. The integration is implemented in two main parts:
-**Install Socket.IO**:
-   ```bash
-   npm install socket.io
-```
-### Server-Side Integration
-   - Sets up an Express server with Socket.IO
-   - Connects to MongoDB and watches for changes in the bookings collection
-   - Emits 'bookingUpdate' events when changes are detected
+## Push Notification System
 
-  
-## Usage/Examples
-```typescript
-   // server.ts
-import express from 'express';
-import { Server } from 'socket.io';
-import http from 'http';
+Our project implements a real-time push notification system to keep users informed about style updates across the application. This system ensures that all connected clients receive instant updates when global styles are changed.
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+### Key Components
 
-// Handle WebSocket connections
-io.on('connection', (socket) => {
-  console.log('A client connected');
+1. **Server-Side Setup**
+   The server uses the `web-push` library to handle push notifications:
 
-  // Send a welcome message to the new client
-  socket.emit('message', 'Hello from the server!');
+   ```typescript
+   const webpush = require('web-push');
 
-  // Handle client messages
-  socket.on('clientMessage', (msg) => {
-    console.log('Message from client:', msg);
-    // Broadcast message to all clients
-    io.emit('message', msg);
-  });
+   const vapidDetails = {
+     subject: 'mailto:your-email@example.com',
+     publicKey: 'YOUR_PUBLIC_VAPID_KEY',
+     privateKey: 'YOUR_PRIVATE_VAPID_KEY'
+   };
 
-  // Handle client disconnection
-  socket.on('disconnect', () => {
-    console.log('A client disconnected');
-  });
-});
+   webpush.setVapidDetails(
+     vapidDetails.subject,
+     vapidDetails.publicKey,
+     vapidDetails.privateKey
+   );
+   ```
 
-// Start the server
-server.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
-});
+2. **Client-Side Subscription**
+   When a user visits the site, their browser subscribes to push notifications:
 
-```
-### Client-Side Integration
-   - Establishes a Socket.IO connection
-   - Listens for 'bookingUpdate' events
-   - Updates the UI in real-time when booking data changes
+   ``` typescript
+   if ('serviceWorker' in navigator && 'PushManager' in window) {
+     const registration = await navigator.serviceWorker.register('/service-worker.js');
+     const subscription = await registration.pushManager.subscribe({
+       userVisibleOnly: true,
+       applicationServerKey: vapidPublicKey
+     });
+     
+     await fetch('/api/subscribe', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify(subscription)
+     });
+   }
+   ```
 
-## Usage/Examples
-```typescript
-   //Client side
-   import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+3. **Sending Notifications**
+   When styles are updated, the server sends notifications to all subscribed clients:
 
-const BookingDetailPage: React.FC = () => {
-  const [messages, setMessages] = useState<string[]>([]);
-  const [input, setInput] = useState<string>('');
+   ```typescript
+   const subscriptions = await db.collection('pushSubscriptions').find({}).toArray();
+   for (const subscription of subscriptions) {
+     try {
+       await webpush.sendNotification(subscription, JSON.stringify({
+         title: 'Style Update',
+         body: 'The website style has been updated.',
+         data: updatedStyles
+       }));
+     } catch (error) {
+       console.error('Error sending push notification:', error);
+     }
+   }
+   ```
 
-  useEffect(() => {
-    // Connect to the WebSocket server
-    const socket = io('http://localhost:3000');
+4. **Service Worker**
+   The service worker (`public/service-worker.js`) handles incoming push events:
 
-    // Listen for messages from the server
-    socket.on('message', (message: string) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
+   ```typescript
+   self.addEventListener('push', function(event) {
+     const data = event.data.json();
+     self.registration.showNotification(data.title, {
+       body: data.body,
+       data: data.data
+     });
+   });
+   ```
 
-    // Send the message to the server
-    const sendMessage = (msg: string) => {
-      socket.emit('clientMessage', msg);
-      setInput('');
-    };
+5. **Client-Side Handling**
+   The main application listens for messages from the service worker:
 
-    // Clean up the connection on component unmount
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+   ```typescript
+   navigator.serviceWorker.addEventListener('message', (event) => {
+     if (event.data && event.data.type === 'STYLE_UPDATE') {
+       updateStyles(event.data.styles);
+     }
+   });
+   ```
 
-```
-This setup enables instant updates across all connected clients whenever a booking is modified, ensuring a synchronized user experience.
+### How It Works
+
+1. Users subscribe to push notifications on their first visit.
+2. When styles are updated (e.g., in the settings page), the server saves the new styles and sends push notifications to all subscribed clients.
+3. The service worker receives the push event, shows a notification, and sends a message to the client.
+4. The client receives the message and updates the styles in real-time.
+
+This system enables instant style updates across all connected clients without requiring a page refresh, enhancing the user experience with real-time synchronization.
+
 
 ## 🏁 Getting Started
 
