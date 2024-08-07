@@ -27,7 +27,15 @@ const Form: React.FC = () => {
   });
 
   useEffect(() => {
-    setStyle(currentStyles);
+    // Filter out any properties not in IStyle
+    const filteredStyles = Object.keys(style).reduce((acc, key) => {
+      if (key in currentStyles) {
+        acc[key as keyof IStyle] = currentStyles[key as keyof typeof currentStyles];
+      }
+      return acc;
+    }, {} as IStyle);
+    
+    setStyle(filteredStyles);
   }, [currentStyles]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +64,7 @@ const Form: React.FC = () => {
 
       const data = await response.json();
       console.log('Style saved successfully:', data.message);
-      setStyles(style);
+      setStyles({ ...currentStyles, ...style });
       // Optionally, show a success message to the user
     } catch (error) {
       console.error('Error saving style:', error);
