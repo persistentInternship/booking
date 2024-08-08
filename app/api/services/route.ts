@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { Service } from '@/app/model/Service';
+import { Service, ServiceInput } from '@/app/interface/model/Service';
 
 // POST request handler for adding a new service
 export async function POST(request: Request) {
@@ -10,10 +10,10 @@ export async function POST(request: Request) {
     const db = client.db();
     
     // Extract service data from request body
-    const body: Service = await request.json();
+    const body: ServiceInput = await request.json();
     
     // Insert the new service
-    const result = await db.collection('services').insertOne(body);
+    const result = await db.collection<Service>('services').insertOne(body);
     
     return NextResponse.json({ message: 'Service added successfully', id: result.insertedId });
   } catch (error) {

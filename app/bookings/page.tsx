@@ -9,14 +9,7 @@ import Footer from '../components/Footer';
 import Loading from '../components/Loading';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useStyles } from '../contexts/StyleContext';
-
-interface Booking {
-  _id: string;
-  serviceName: string;
-  dateTime: string;
-  cost: number;
-  status: string;
-}
+import { Booking } from '@/app/interface/booking';
 
 type SortOption = 'dateAsc' | 'dateDesc' | 'costAsc' | 'costDesc';
 
@@ -178,8 +171,8 @@ export default function BookingsPage() {
           <>
             <ul className="space-y-4">
               {currentBookings.map((booking) => (
-                <li key={booking._id} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <Link href={`/bookings/${booking._id}`}>
+                <li key={booking._id.toString()} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <Link href={`/bookings/${booking._id.toString()}`}>
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="text-lg font-semibold" style={{ color: styles.textColor }}>{booking.serviceName}</h3>

@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { Booking, BookingUpdateData } from '../../../interface/booking';
 
 // GET request handler
 export async function GET(
@@ -19,9 +20,13 @@ export async function GET(
     // Connect to MongoDB and fetch the booking
     const client = await clientPromise;
     const db = client.db();
-    const booking = await db.collection('bookings').findOne({
+    
+    // Add a null check for session.user.email
+    const userId = session.user.email ?? null;
+
+    const booking = await db.collection<Booking>('bookings').findOne({
       _id: new ObjectId(params.id),
-      userId: session.user.email
+      userId: userId
     });
 
     if (!booking) {
@@ -55,7 +60,7 @@ export async function PATCH(
     const { status, name, email, dateTime } = await request.json();
 
     // Prepare update data
-    const updateData: { [key: string]: any } = {};
+    const updateData: BookingUpdateData = {};
     if (status === 'Cancelled') {
       updateData.status = 'Cancelled';
     }
@@ -68,9 +73,12 @@ export async function PATCH(
       return NextResponse.json({ error: 'No valid update data provided' }, { status: 400 });
     }
 
+    // Add a null check for session.user.email
+    const userId = session.user.email ?? null;
+
     // Update the booking
-    const result = await db.collection('bookings').findOneAndUpdate(
-      { _id: new ObjectId(params.id), userId: session.user.email },
+    const result = await db.collection<Booking>('bookings').findOneAndUpdate(
+      { _id: new ObjectId(params.id), userId: userId },
       { $set: updateData },
       { returnDocument: 'after' }
     );

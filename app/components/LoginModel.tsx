@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { signIn } from "next-auth/react";
 import { useStyles } from '../contexts/StyleContext';
+import { API_ROUTES } from '../routes';
 
 // Define props interface for LoginModal
 interface LoginModalProps {
@@ -25,6 +26,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onShowSignup }
         redirect: false,
         email: loginEmail,
         password: loginPassword,
+        callbackUrl: API_ROUTES.LOGIN,
       });
       if (result?.error) {
         alert(result.error);

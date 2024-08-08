@@ -1,8 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { defaultStyles, StyleType } from '../components/DefaultStyle';
+import { defaultStyles } from '../components/DefaultStyle';
 import { useSession } from 'next-auth/react';
+import { StyleType, StyleContextType, StyleProviderProps } from '../interface/styles';
+
+// Define the Session type here, extending from next-auth
+import { Session } from 'next-auth';
 
 declare module 'next-auth' {
   interface Session {
@@ -15,19 +19,13 @@ declare module 'next-auth' {
   }
 }
 
-interface StyleContextType {
-  styles: StyleType;
-  setStyles: React.Dispatch<React.SetStateAction<StyleType>>;
-  isLoading: boolean;
-}
-
 const StyleContext = createContext<StyleContextType>({
   styles: defaultStyles,
   setStyles: () => {},
   isLoading: true,
 });
 
-export function StyleProvider({ children }: { children: React.ReactNode }) {
+export function StyleProvider({ children }: StyleProviderProps) {
   const [styles, setStyles] = useState<StyleType>(defaultStyles);
   const [isLoading, setIsLoading] = useState(true);
   const { data: session, status } = useSession();

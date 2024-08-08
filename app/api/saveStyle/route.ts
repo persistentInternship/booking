@@ -2,16 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/options";
-
-interface IStyle {
-  backgroundColor: string;
-  textColor: string;
-  buttonColor: string;
-  logoColor: string;
-  hoverColor: string;
-  logoname: string;
-  userId: string;
-}
+import { IStyle } from '../../interface/styles';
 
 const StyleSchema = new mongoose.Schema<IStyle>({
   backgroundColor: String,

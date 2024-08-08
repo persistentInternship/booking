@@ -7,17 +7,7 @@ import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import Loading from '../components/Loading';
 import { useStyles } from '../contexts/StyleContext';
-
-interface Service {
-  _id: string;
-  name: string;
-  category: string;
-  price: number;
-  duration: string;
-  photo: string;
-  rating: number;
-  description: string;
-}
+import { Service, ServiceWithStringId } from '../interface/model/Service';
 
 interface BookingFormData {
   name: string;
@@ -32,8 +22,8 @@ const ServicesPage = () => {
   const searchQuery = searchParams?.get('search') ?? null;
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [services, setServices] = useState<Service[]>([]);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [services, setServices] = useState<ServiceWithStringId[]>([]);
+  const [selectedService, setSelectedService] = useState<ServiceWithStringId | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [bookingFormData, setBookingFormData] = useState<BookingFormData>({
@@ -66,9 +56,13 @@ const ServicesPage = () => {
       try {
         const response = await fetch(url);
         if (response.ok) {
-          const data = await response.json();
-          setServices(data);
-          setNoResults(data.length === 0);
+          const data: Service[] = await response.json();
+          const servicesWithStringId: ServiceWithStringId[] = data.map(service => ({
+            ...service,
+            _id: service._id ? service._id.toString() : '' // Handle potentially undefined _id
+          }));
+          setServices(servicesWithStringId);
+          setNoResults(servicesWithStringId.length === 0);
         } else {
           console.error('Failed to fetch services');
           setServices([]);
@@ -85,7 +79,7 @@ const ServicesPage = () => {
     fetchServices();
   }, [category, searchQuery]);
 
-  const handleServiceClick = (service: Service) => {
+  const handleServiceClick = (service: ServiceWithStringId) => {
     setSelectedService(service);
   };
 
@@ -163,7 +157,7 @@ const ServicesPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {services.map((service) => (
               <div
-                key={service._id}
+                key={service._id || `service-${service.name}`} // Use a fallback key if _id is empty
                 className="bg-white p-4 rounded-lg shadow-md cursor-pointer"
                 onClick={() => handleServiceClick(service)}
               >

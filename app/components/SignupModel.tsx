@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useStyles } from '../contexts/StyleContext';
+import { API_ROUTES } from '../routes';
 
 // Define props interface for SignupModal
 interface SignupModalProps {
@@ -28,7 +29,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose }) => {
     }
     try {
       // Send signup request to the API
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch(API_ROUTES.SIGNUP, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: signupEmail, password: signupPassword, phone: signupPhone }),

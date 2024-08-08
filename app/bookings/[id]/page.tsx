@@ -7,17 +7,7 @@ import NavBar from '@/app/components/NavBar';
 import Footer from '@/app/components/Footer';
 import Loading from '@/app/components/Loading';
 import { useStyles } from '@/app/contexts/StyleContext';
-
-// Define Booking interface
-interface Booking {
-  _id: string;
-  serviceName: string;
-  dateTime: string;
-  cost: number;
-  status: string;
-  name: string;
-  email: string;
-}
+import { Booking, BookingUpdateData } from '@/app/interface/booking';
 
 export default function BookingDetailPage({ params }: { params: { id: string } }) {
   const { styles } = useStyles();
@@ -26,7 +16,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedBooking, setEditedBooking] = useState<Partial<Booking>>({});
+  const [editedBooking, setEditedBooking] = useState<BookingUpdateData>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -77,7 +67,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
       if (!response.ok) {
         throw new Error('Failed to fetch booking');
       }
-      const data = await response.json();
+      const data: Booking = await response.json();
       console.log('Fetched booking data:', data);
       setBooking(data);
     } catch (error) {
@@ -93,8 +83,8 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     if (!booking) return;
 
     try {
-      console.log('Attempting to cancel booking:', booking._id);
-      const response = await fetch(`/api/bookings/${booking._id}`, {
+      console.log('Attempting to cancel booking:', booking._id.toString());
+      const response = await fetch(`/api/bookings/${booking._id.toString()}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Cancelled' }),
@@ -105,7 +95,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         throw new Error(errorData.error || 'Failed to cancel booking');
       }
 
-      const updatedBooking = await response.json();
+      const updatedBooking: Booking = await response.json();
       console.log('Booking cancelled successfully:', updatedBooking);
       setBooking(updatedBooking);
     } catch (error) {
@@ -129,7 +119,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
     if (!booking) return;
 
     try {
-      const response = await fetch(`/api/bookings/${booking._id}`, {
+      const response = await fetch(`/api/bookings/${booking._id.toString()}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editedBooking),
@@ -140,7 +130,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         throw new Error(errorData.error || 'Failed to update booking');
       }
 
-      const updatedBooking = await response.json();
+      const updatedBooking: Booking = await response.json();
       setBooking(updatedBooking);
       setIsEditing(false);
     } catch (error) {
@@ -195,7 +185,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
         <Link href="/bookings" className="text-black hover:underline mb-4 inline-block" style={{ color: styles.textColor }}>&larr; Back to Bookings</Link>
         <h1 className={`text-3xl font-bold mb-6 ${styles.textColor}`}>Booking Details</h1>
         <div className="bg-white shadow-md rounded-lg p-6">
-          <p className={`text-sm mb-2 ${styles.textColor}`}>Booking ID: {booking._id}</p>
+          <p className={`text-sm mb-2 ${styles.textColor}`}>Booking ID: {booking._id.toString()}</p>
           <h2 className={`text-2xl font-semibold mb-4 ${styles.textColor}`}>{booking.serviceName}</h2>
           
           {isEditing ? (

@@ -7,6 +7,7 @@ import ServiceImages from './ServiceImages';
 import LoginModal from './LoginModel';
 import SignupModal from './SignupModel';
 import { useStyles } from '../contexts/StyleContext';
+import { PAGE_ROUTES } from '../routes';
 
 // Define categories of home services
 const categories = [
@@ -31,7 +32,7 @@ const HomeServices = () => {
   // Handle click on a service category
   const handleServiceClick = (categoryName: string) => {
     if (status === 'authenticated') {
-      router.push(`/services?category=${encodeURIComponent(categoryName)}`);
+      router.push(`${PAGE_ROUTES.SERVICES}?category=${encodeURIComponent(categoryName)}`);
     } else {
       setShowLoginPrompt(true);
     }

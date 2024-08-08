@@ -10,6 +10,7 @@ import SignupModal from './SignupModel';
 import { useStyles } from '../contexts/StyleContext';
 import { getStylesAsCSS } from './DefaultStyle';
 import Loading from './Loading';
+import { API_ROUTES, PAGE_ROUTES } from '../routes';
 
 function NavBar() {
   const { styles, setStyles, isLoading } = useStyles();
@@ -42,7 +43,7 @@ function NavBar() {
   const handleBookingsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (status === 'authenticated') {
-      router.push('/bookings');
+      router.push(PAGE_ROUTES.BOOKINGS);
     } else {
       setShowLoginPopup(true);
     }
@@ -51,14 +52,14 @@ function NavBar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/services?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`${PAGE_ROUTES.SERVICES}?search=${encodeURIComponent(searchQuery.trim())}`);
       setVisible(false);
       setMobileMenuOpen(false);
     }
   };
 
   const handleSettingsClick = () => {
-    router.push('/settings');
+    router.push(PAGE_ROUTES.SETTINGS);
   };
 
   useEffect(() => {
@@ -114,19 +115,19 @@ function NavBar() {
         color: styles.textColor
       }}>
               <Dropdown.Item>
-                <Link href="/">Home</Link>
+                <Link href={PAGE_ROUTES.HOME}>Home</Link>
               </Dropdown.Item>
               <Dropdown.Item>
-                <Link href="/contact_us">Contact Us</Link>
+                <Link href={PAGE_ROUTES.CONTACT_US}>Contact Us</Link>
               </Dropdown.Item>
               <Dropdown.Item>
-                <Link href="/about">About</Link>
+                <Link href={PAGE_ROUTES.ABOUT}>About</Link>
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Navbar.Start>
         <Navbar.Center>
-          <Link href="/">
+          <Link href={PAGE_ROUTES.HOME}>
             <Button tag="a" color="ghost" className="normal-case text-xl">
               <img src="/photo/door.svg" alt="Door" className="logo inline-block h-5 w-5 mr-2" />
               {styles.logoname}
@@ -139,7 +140,7 @@ function NavBar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </Button>
-          <Link href="/bookings" onClick={handleBookingsClick}>
+          <Link href={PAGE_ROUTES.BOOKINGS} onClick={handleBookingsClick}>
             <Button color="ghost" shape="circle">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5M17 13l1.4 5M9 21h6M9 21a2 2 11-4 0M15 21a2 2 104 0" />
@@ -164,6 +165,7 @@ function NavBar() {
         </Navbar.End>
       </Navbar>
 
+
       <Navbar className="navbar lg:hidden" style={{
         backgroundColor: styles.backgroundColor,
         color: styles.textColor
@@ -174,15 +176,14 @@ function NavBar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
             </svg>
           </Button>
-        </Navbar.Start>
-        <Navbar.Center className="flex-1 justify-center">
-          <Link href="/" className="flex items-center">
+          <Link href={PAGE_ROUTES.HOME} className="flex items-center">
             <img src="/photo/door.svg" alt="Door" className="logo h-8 w-8 mr-2" />
             <span className="text-xl font-bold">{styles.logoname}</span>
           </Link>
-        </Navbar.Center>
+        </Navbar.Start>
+      
         <Navbar.End className="flex-none">
-          <Link href="/bookings" onClick={handleBookingsClick}>
+          <Link href={PAGE_ROUTES.BOOKINGS} onClick={handleBookingsClick}>
             <Button color="ghost" shape="circle" className="mr-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5M17 13l1.4 5M9 21h6M9 21a2 2 11-4 0M15 21a2 2 104 0" />
@@ -209,9 +210,9 @@ function NavBar() {
 
       {mobileMenuOpen && (
         <div className="lg:hidden p-4">
-          <Link href="/" className="block py-2">Home</Link>
-          <Link href="/contact_us" className="block py-2">Contact Us</Link>
-          <Link href="/about" className="block py-2">About</Link>
+          <Link href={PAGE_ROUTES.HOME} className="block py-2">Home</Link>
+          <Link href={PAGE_ROUTES.CONTACT_US} className="block py-2">Contact Us</Link>
+          <Link href={PAGE_ROUTES.ABOUT} className="block py-2">About</Link>
           <form onSubmit={handleSearch} className="mt-4">
             <Input 
               placeholder="Search Services" 
