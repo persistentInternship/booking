@@ -157,7 +157,6 @@ The MongoDB connection string and NextAuth secret in this example are placeholde
 3. Consider using separate databases for development and production environments.
 4. Ensure that your MongoDB cluster has appropriate security measures in place, such as IP whitelisting and proper user permissions.
 
-Always follow best practices for securing your application and protecting sensitive data.
 
 ## 🤝 Contributing
 
