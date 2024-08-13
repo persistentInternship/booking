@@ -64,5 +64,3 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Error fetching bookings' }, { status: 500 });
   }
 }
-
-

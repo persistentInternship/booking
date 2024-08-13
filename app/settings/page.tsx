@@ -1,9 +1,7 @@
 "use client"
-import { useState, ChangeEvent, FormEvent, useEffect, useCallback } from 'react';
+import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Footer from '../components/Footer';
 import Navbar from '../components/NavBar';
-import ToastNotification from '../components/ToastNotification';
-import Loading from '../components/Loading';
 import { useStyles } from '../contexts/StyleContext';
 import { useSession } from "next-auth/react";
 
@@ -27,8 +25,6 @@ const Form: React.FC = () => {
     hoverColor: '',
     logoname: '',
   });
-  const [toastConfig, setToastConfig] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Filter out any properties not in IStyle
@@ -46,21 +42,14 @@ const Form: React.FC = () => {
     setStyle({ ...style, [e.target.name]: e.target.value });
   };
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'warning') => {
-    setToastConfig({ message, type });
-  }, []);
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!session) {
-      showToast('User not authenticated', 'error');
+      console.error('User not authenticated');
       return;
     }
-    
-    setIsLoading(true);
-    showToast('Submitting style configuration...', 'info');
-
     try {
+      console.log('Submitting style:', style);
       const response = await fetch('/api/saveStyle', {
         method: 'POST',
         headers: {
@@ -74,25 +63,18 @@ const Form: React.FC = () => {
       }
 
       const data = await response.json();
+      console.log('Style saved successfully:', data.message);
       setStyles({ ...currentStyles, ...style });
-      showToast('Style configuration submitted successfully', 'success');
+      // Optionally, show a success message to the user
     } catch (error) {
       console.error('Error saving style:', error);
-      showToast('Error submitting style configuration', 'error');
-    } finally {
-      setIsLoading(false);
+      // Optionally, show an error message to the user
     }
   };
 
   return (
     <>  
     <Navbar />
-    <ToastNotification config={toastConfig} />
-    {isLoading && (
-      <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50">
-        <Loading />
-      </div>
-    )}
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
         <h2 className="text-2xl font-bold mb-4 text-center text-blue-600">Style Configuration</h2>

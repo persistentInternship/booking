@@ -31,6 +31,7 @@ function NavBar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false); // New state for dropdown
 
   const toggleVisible = useCallback(() => {
     setVisible(visible => !visible);
@@ -64,6 +65,14 @@ function NavBar() {
       setVisible(false);
       setMobileMenuOpen(false);
     }
+  };
+
+  const handleSettingsClick = () => {
+    router.push(PAGE_ROUTES.SETTINGS);
+  };
+
+  const toggleSettingsDropdown = () => {
+    setSettingsDropdownOpen(prev => !prev);
   };
 
   const applyDefaultTheme = () => {
@@ -160,20 +169,24 @@ function NavBar() {
             </Button>
           </Link>
           {status === 'authenticated' ? (
-            <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn btn-ghost btn-circle">
+            <div className="relative">
+              <Button color="ghost" shape="circle" onClick={toggleSettingsDropdown}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-              </label>
-              <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content rounded-box w-52" style={{
-                backgroundColor: styles.backgroundColor,
-                color: styles.textColor
-              }}>
-                <li><Link href={PAGE_ROUTES.SETTINGS}>Style Configurator</Link></li>
-                <li><a onClick={applyDefaultTheme}>Default Theme</a></li>
-                <li><a onClick={() => signOut()}>Logout</a></li>
-              </ul>
+              </Button>
+              {settingsDropdownOpen && ( // Dropdown menu
+                <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-10">
+                  <Link href={PAGE_ROUTES.SETTINGS}>
+                    <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white mb-2">Style Configurator</Button>
+                  </Link>
+                  <Dropdown.Item>
+                    <Button color="ghost" onClick={applyDefaultTheme} className="w-full bg-gradient-to-r from-black to-gray-800 text-white mb-2">Default Theme</Button> {/* New button for default theme */}
+                  </Dropdown.Item>
+                  <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white mb-2" onClick={() => signOut()}>Logout</Button>
+                </div>
+              )}
             </div>
           ) : (
             <button onClick={handleShowLoginModal} className="bg-transparent hover:bg-opacity-20 hover:bg-gray-700 text-white font-semibold py-2 px-4 mr-2 focus:outline-none border-0">
@@ -208,20 +221,24 @@ function NavBar() {
             </Button>
           </Link>
           {status === 'authenticated' ? (
-            <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn btn-ghost btn-circle">
+            <div className="relative">
+              <Button color="ghost" shape="circle" onClick={toggleSettingsDropdown}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-              </label>
-              <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content rounded-box w-52" style={{
-                backgroundColor: styles.backgroundColor,
-                color: styles.textColor
-              }}>
-                <li><Link href={PAGE_ROUTES.SETTINGS}>Style Configurator</Link></li>
-                <li><a onClick={applyDefaultTheme}>Default Theme</a></li>
-                <li><a onClick={() => signOut()}>Logout</a></li>
-              </ul>
+              </Button>
+              {settingsDropdownOpen && ( // Dropdown menu
+                <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-10">
+                  <Link href={PAGE_ROUTES.SETTINGS}>
+                    <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white space-y-1">Style Configurator</Button>
+                  </Link>
+                  <Dropdown.Item>
+                    <Button color="ghost" onClick={applyDefaultTheme} className="w-full bg-gradient-to-r from-black to-gray-800 text-white mb-2">Default Theme</Button> {/* New button for default theme */}
+                  </Dropdown.Item>
+                  <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white mb-2" onClick={() => signOut()}>Logout</Button>
+                </div>
+              )}
             </div>
           ) : (
             <button onClick={handleShowLoginModal} className="bg-transparent hover:bg-opacity-20 hover:bg-gray-700 text-white font-semibold py-2 px-4 mr-2 focus:outline-none border-0">
