@@ -9,7 +9,7 @@ const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 
-const mongoUrl = process.env.MONGODB_URI || 'mongodb+srv://sctaman21:waitforit@test.vg3iafi.mongodb.net/?retryWrites=true&w=majority&appName=test';
+const mongoUrl = process.env.MONGODB_URI || 'mongodb+srv://sctaman21:hellohello@test.vg3iafi.mongodb.net/?retryWrites=true&w=majority&appName=test';
 const dbName = 'test';
 
 // Set VAPID details directly
