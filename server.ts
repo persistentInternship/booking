@@ -4,6 +4,7 @@ import next from 'next';
 import { MongoClient } from 'mongodb';
 import webpush from 'web-push';
 import mongoose, { Document, Model } from 'mongoose';
+import clientPromise from './lib/mongodb';
 
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
@@ -132,7 +133,22 @@ connectToMongoDB().then(({ mongoose, client }) => {
       const bookings = await bookingsCollection.find({}).toArray();
       res.json(bookings);
     });
-
+    
+    app.post('/api/bookings', async (req, res) => {
+      try {
+        const client = await clientPromise;
+        const db = client.db();
+        const bookingsCollection = db.collection('bookings');
+    
+        const booking = req.body;
+        const result = await bookingsCollection.insertOne(booking);
+    
+        res.status(201).json({ message: 'Booking added successfully', id: result.insertedId });
+      } catch (error) {
+        console.error('Error adding booking:', error);
+        res.status(500).json({ error: 'Error adding booking' });
+      }
+    });
     // Modify the /api/saveStyle route
     app.post('/api/saveStyle', async (req, res) => {
       try {
@@ -201,6 +217,23 @@ connectToMongoDB().then(({ mongoose, client }) => {
     // Handle all other routes with Next.js
     app.all('*', (req, res) => {
       return handle(req, res);
+    });
+
+    // Add the route for adding bookings
+    app.post('/api/bookings', async (req, res) => {
+      try {
+        const client = await clientPromise;
+        const db = client.db();
+        const bookingsCollection = db.collection('bookings');
+
+        const booking = req.body;
+        const result = await bookingsCollection.insertOne(booking);
+
+        res.status(201).json({ message: 'Booking added successfully', id: result.insertedId });
+      } catch (error) {
+        console.error('Error adding booking:', error);
+        res.status(500).json({ error: 'Error adding booking' });
+      }
     });
 
     const port = process.env.PORT || 3000;
