@@ -101,9 +101,14 @@ const Form: React.FC = () => {
             </div>
           </div>
         ))}
-        <button type="submit" className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
-          Submit
-        </button>
+        <div className="flex justify-between">
+          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
+            Save   
+          </button>
+          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
+            Save and Apply
+          </button>
+        </div>
       </form>
     </div>
     <Footer />
