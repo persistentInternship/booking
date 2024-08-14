@@ -112,20 +112,27 @@ const ServicesPage = () => {
       dateTime: new Date(`${bookingFormData.date}T${bookingFormData.time}`).toISOString(),
     };
 
-    const response = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(booking),
-    });
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(booking),
+      });
 
-    if (response.ok) {
-      console.log('Booking submitted:', booking);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit booking');
+      }
+
+      const data = await response.json();
+      console.log('Booking submitted:', data);
       setBookingFormData({ name: '', email: '', date: '', time: '' });
       setShowBookingForm(false);
       setSelectedService(null);
       router.push('/bookings');
-    } else {
-      console.error('Failed to submit booking');
+    } catch (error) {
+      console.error('Error submitting booking:', error);
+      // Here you can add some user feedback, like showing an error message
     }
   };
 

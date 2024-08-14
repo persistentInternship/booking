@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+import path from 'path';
 import express from 'express';
 import http from 'http';
 import next from 'next';
@@ -5,19 +7,33 @@ import { MongoClient } from 'mongodb';
 import webpush from 'web-push';
 import mongoose, { Document, Model } from 'mongoose';
 
+// Load environment variables from .env.local
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 
-const mongoUrl = process.env.MONGODB_URI || 'mongodb+srv://sctaman21:hellohello@test.vg3iafi.mongodb.net/?retryWrites=true&w=majority&appName=test';
+// Use environment variables with a check and type assertion
+const mongoUrl = process.env.MONGODB_URI as string;
+if (!mongoUrl) {
+  console.error('MONGODB_URI is not set in environment variables');
+  process.exit(1);
+}
+
 const dbName = 'test';
 
-// Set VAPID details directly
+// Set VAPID details from environment variables
 const vapidDetails = {
-  subject: 'mailto:sctaman21@gmail.com',
-  publicKey: 'BO2Jsb7LMLoPquHZEFKWBkndxtbJ8q8qW-RE2vn5lWoeUlYWgRNPb81xc14TXIkTOL7tC7qB25UxIlk2byqAU_c',
-  privateKey: 'j-LBWiVoBITk8wJ1rXYI_T4krYvrM4lH4DA4nwtUsek'
+  subject: process.env.VAPID_SUBJECT as string,
+  publicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
+  privateKey: process.env.VAPID_PRIVATE_KEY as string
 };
+
+if (!vapidDetails.subject || !vapidDetails.publicKey || !vapidDetails.privateKey) {
+  console.error('VAPID details are not set in environment variables');
+  process.exit(1);
+}
 
 webpush.setVapidDetails(
   vapidDetails.subject,
@@ -119,7 +135,7 @@ connectToMongoDB().then(({ mongoose, client }) => {
 
     // Your existing Express routes
     app.get('/api/vapidPublicKey', (req, res) => {
-      res.json({ publicKey: vapidDetails.publicKey });
+      res.json({ publicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY });
     });
 
     app.post('/api/subscribe', async (req, res) => {
@@ -128,9 +144,28 @@ connectToMongoDB().then(({ mongoose, client }) => {
       res.status(201).json({});
     });
 
+    // GET route for fetching bookings
     app.get('/api/bookings', async (req, res) => {
-      const bookings = await bookingsCollection.find({}).toArray();
-      res.json(bookings);
+      try {
+        const bookings = await bookingsCollection.find({}).toArray();
+        res.json(bookings);
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({ error: 'Error fetching bookings' });
+      }
+    });
+
+    // POST route for creating a new booking
+    app.post('/api/bookings', async (req, res) => {
+      try {
+        const booking = req.body;
+        booking.createdAt = new Date();
+        const result = await bookingsCollection.insertOne(booking);
+        res.status(201).json({ message: 'Booking added successfully', id: result.insertedId });
+      } catch (error) {
+        console.error('Error adding booking:', error);
+        res.status(500).json({ error: 'Error adding booking' });
+      }
     });
 
     // Modify the /api/saveStyle route

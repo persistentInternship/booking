@@ -1,52 +1,53 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { getDatabase } from '@/lib/mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-// POST request handler for creating a new booking
 export async function POST(request: Request) {
-  // Check if user is authenticated
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
-    // Connect to MongoDB
-    const client = await clientPromise;
-    const db = client.db();
+    console.log('POST /api/bookings: Start');
     
-    // Extract booking data from request body
+    const session = await getServerSession(authOptions);
+    console.log('Session:', session);
+    
+    if (!session || !session.user) {
+      console.log('Unauthorized access attempt');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
+    console.log('Received booking data:', body);
     
-    // Prepare booking object
+    const db = await getDatabase('your_database_name');
+    console.log('Connected to database');
+    
     const booking = {
       ...body,
       userId: session.user.email,
       createdAt: new Date(),
     };
     
-    // Insert the new booking
     const result = await db.collection('bookings').insertOne(booking);
+    console.log('Booking inserted:', result);
     
+    console.log('POST /api/bookings: End');
     return NextResponse.json({ message: 'Booking added successfully', id: result.insertedId });
   } catch (error) {
-    return NextResponse.json({ error: 'Error adding booking' }, { status: 500 });
+    console.error('Detailed error in POST /api/bookings:', error);
+    return NextResponse.json({ error: 'Error adding booking', details: (error as Error).message }, { status: 500 });
   }
 }
 
-// GET request handler for fetching user's bookings
 export async function GET(request: Request) {
-  // Check if user is authenticated
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
+    // Check if user is authenticated
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Connect to MongoDB
-    const client = await clientPromise;
-    const db = client.db();
+    const db = await getDatabase('your_database_name');
     
     // Fetch bookings for the authenticated user
     const bookings = await db.collection('bookings')
@@ -61,6 +62,7 @@ export async function GET(request: Request) {
     
     return NextResponse.json(bookings);
   } catch (error) {
-    return NextResponse.json({ error: 'Error fetching bookings' }, { status: 500 });
+    console.error('Error fetching bookings:', error);
+    return NextResponse.json({ error: 'Error fetching bookings', details: (error as Error).message }, { status: 500 });
   }
 }
