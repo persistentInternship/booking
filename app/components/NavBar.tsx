@@ -8,20 +8,13 @@ import { useRouter } from 'next/navigation';
 import LoginModal from './LoginModel';
 import SignupModal from './SignupModel';
 import { useStyles } from '../contexts/StyleContext';
-import { getStylesAsCSS } from './DefaultStyle';
+import { getStylesAsCSS, defaultStyles } from './DefaultStyle';
 import Loading from './Loading';
-import { API_ROUTES, PAGE_ROUTES } from '../routes';
+import { API_ROUTES, PAGE_ROUTES, getUserTheme } from '../routes';
 
-const defaultTheme = {
-  backgroundColor: '#000000', // Set default background color
-  textColor: '#FFFFFF',       // Set default text color
-  buttonColor: '#000000',     // Set default button color
-  logoColor: '#FFFFFF',       // Set default logo color
-  hoverColor: '#1F2937',      // Set default hover color
-};
 
 function NavBar() {
-  const { styles, setStyles, isLoading } = useStyles();
+  const { isLoading } = useStyles();
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -31,7 +24,10 @@ function NavBar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false); // New state for dropdown
+  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false);
+  const [styles, setStyles] = useState(defaultStyles); // Initialize styles with defaultStyles
+  const [isDefaultTheme, setIsDefaultTheme] = useState(true); // State to track theme type
+  const [dummyState, setDummyState] = useState(0);
 
   const toggleVisible = useCallback(() => {
     setVisible(visible => !visible);
@@ -76,11 +72,16 @@ function NavBar() {
   };
 
   const applyDefaultTheme = () => {
-    // Reset styles to default values
-    setStyles((prevStyles) => ({
-      ...prevStyles, // Preserve existing styles
-      ...defaultTheme, // Apply default theme styles
-    }));
+    setStyles(defaultStyles); // Apply default styles directly
+    setIsDefaultTheme(true); // Set to default theme
+    setDummyState(prev => prev + 1); // Force re-render
+  };
+
+  const applyUserTheme = async () => {
+    const userTheme = await getUserTheme(); // Fetch user theme from the route
+    setStyles(userTheme); // Apply user theme
+    setIsDefaultTheme(false); // Set to user theme
+    setDummyState(prev => prev + 1); // Force re-render
   };
 
   useEffect(() => {
@@ -176,13 +177,19 @@ function NavBar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </Button>
-              {settingsDropdownOpen && ( // Dropdown menu
+              {settingsDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-10">
                   <Link href={PAGE_ROUTES.SETTINGS}>
                     <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white mb-2">Style Configurator</Button>
                   </Link>
                   <Dropdown.Item>
-                    <Button color="ghost" onClick={applyDefaultTheme} className="w-full bg-gradient-to-r from-black to-gray-800 text-white mb-2">Default Theme</Button> {/* New button for default theme */}
+                    <Button 
+                      color="ghost" 
+                      onClick={isDefaultTheme ? applyDefaultTheme : applyUserTheme} 
+                      className="w-full bg-gradient-to-r from-black to-gray-800 text-white mb-2"
+                    >
+                      {isDefaultTheme ? 'Default Theme' : 'User Theme'} {/* Toggle button text */}
+                    </Button>
                   </Dropdown.Item>
                   <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white mb-2" onClick={() => signOut()}>Logout</Button>
                 </div>
@@ -228,13 +235,19 @@ function NavBar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </Button>
-              {settingsDropdownOpen && ( // Dropdown menu
+              {settingsDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-10">
                   <Link href={PAGE_ROUTES.SETTINGS}>
                     <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white space-y-1">Style Configurator</Button>
                   </Link>
                   <Dropdown.Item>
-                    <Button color="ghost" onClick={applyDefaultTheme} className="w-full bg-gradient-to-r from-black to-gray-800 text-white mb-2">Default Theme</Button> {/* New button for default theme */}
+                    <Button 
+                      color="ghost" 
+                      onClick={isDefaultTheme ? applyDefaultTheme : applyUserTheme} 
+                      className="w-full bg-gradient-to-r from-black to-gray-800 text-white mb-2"
+                    >
+                      {isDefaultTheme ? 'Default Theme' : 'User Theme'} {/* Toggle button text */}
+                    </Button>
                   </Dropdown.Item>
                   <Button color="ghost" className="w-full text-left bg-gradient-to-r from-black to-gray-800 text-white mb-2" onClick={() => signOut()}>Logout</Button>
                 </div>
@@ -267,8 +280,7 @@ function NavBar() {
 
       <Drawer open={visible} onClickOverlay={toggleVisible} className="drawer-left" side={
         <Menu className="p-4 w-80 h-full">
-          <form onSubmit={handleSearch}>
-            <Menu.Item className="mb-4">
+          <form onSubmit={handleSearch}>            <Menu.Item className="mb-4">
               <Input 
                 placeholder="Search Services" 
                 className="w-full" 
