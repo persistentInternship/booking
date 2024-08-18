@@ -46,7 +46,7 @@ const Form: React.FC = () => {
   };
 
   const handleSaveAndApply = async () => {
-    if (!session) {
+    if (!session?.user) {
         setToast({ message: 'User not authenticated', type: 'error' });
         return;
     }
@@ -58,7 +58,7 @@ const Form: React.FC = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...style, userId: session?.user?.id ?? 'unknown' }),
+            body: JSON.stringify({ ...style, userId: (session.user as any).id ?? session.user.email ?? 'unknown' }),
         });
 
         if (!response.ok) {
